@@ -38,10 +38,10 @@ In Render dashboard, go to Environment:
 ```
 DEBUG=False
 SECRET_KEY=your-random-secret-key-here
-ALLOWED_HOSTS=yourdomain.onrender.com
+ALLOWED_HOSTS=shareplug.onrender.com,localhost,127.0.0.1
 DATABASE_URL=postgresql://user:password@localhost/dbname
 ```
-
+**Important:** Replace `shareplug` with your actual Render service name if different.
 **For PostgreSQL database:**
 1. Click "New +" → "PostgreSQL"
 2. Name it (e.g., shareplug-db)
