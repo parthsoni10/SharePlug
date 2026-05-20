@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .mr-page{max-width:800px;margin:40px auto;padding:0 20px;}
+  .mr-title{font-size:1.5rem;font-weight:700;margin-bottom:24px;}
+  .mr-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
+  .mr-head{display:flex;align-items:center;justify-content:space-between;}
+  .mr-name{font-weight:600;font-size:1.05rem;}
+  .mr-city{color:var(--text-muted);font-size:0.85rem;margin-top:4px;}
+  .mr-chargers{margin-top:10px;font-size:0.85rem;color:var(--text-muted);}
+  .mr-notes{background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.2);border-radius:8px;padding:10px;margin-top:10px;font-size:0.85rem;color:var(--orange);}
+</style>
+<div class="mr-page">
+  <div class="mr-title">📋 My Station Registrations</div>
+  {% for r in registrations %}
+  <div class="mr-card">
+    <div class="mr-head">
+      <div><div class="mr-name">{{ r.station_name }}</div><div class="mr-city">{{ r.city }}, {{ r.state }}</div></div>
+      <span class="badge {% if r.status == 'approved' %}badge-green{% elif r.status == 'pending' %}badge-orange{% elif r.status == 'rejected' %}badge-gray{% else %}badge-blue{% endif %}">{{ r.get_status_display }}</span>
+    </div>
+    <div class="mr-chargers">
+      {% for c in r.chargers.all %}{{ c.get_charger_type_display }} ({{ c.power_kw }}kW × {{ c.connector_count }}) {% if not forloop.last %}· {% endif %}{% endfor %}
+    </div>
+    {% if r.admin_notes %}<div class="mr-notes"><strong>Admin:</strong> {{ r.admin_notes }}</div>{% endif %}
+  </div>
+  {% empty %}
+  <p style="text-align:center;color:var(--text-muted);padding:40px 0;">No registrations yet. <a href="{% url 'station_register' %}" style="color:var(--green);">Register your first station</a></p>
+  {% endfor %}
+</div>
+{% endblock %}

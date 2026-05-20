@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .bl-page{max-width:900px;margin:40px auto;padding:0 20px;}
+  .bl-hero{text-align:center;padding:40px 0 32px;}
+  .bl-hero h1{font-size:2rem;font-weight:800;margin-bottom:8px;}
+  .bl-hero h1 span{background:linear-gradient(135deg,var(--green),#00a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .bl-hero p{color:var(--text-muted);font-size:1rem;}
+  .bl-cta{display:flex;gap:12px;justify-content:center;margin:32px 0;}
+  .bl-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:40px;}
+  .bl-feat{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:transform 0.2s;}
+  .bl-feat:hover{transform:translateY(-4px);}
+  .bl-feat i{font-size:1.5rem;color:var(--green);margin-bottom:12px;display:block;}
+  .bl-feat h3{font-size:1rem;font-weight:600;margin-bottom:6px;}
+  .bl-feat p{font-size:0.85rem;color:var(--text-muted);}
+  .bl-regs-title{font-size:1.2rem;font-weight:700;margin-bottom:16px;}
+  .bl-reg{display:flex;align-items:center;justify-content:space-between;background:var(--navy-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;}
+  .bl-reg-name{font-weight:600;}
+  .bl-reg-city{color:var(--text-muted);font-size:0.85rem;}
+</style>
+<div class="bl-page">
+  <div class="bl-hero">
+    <h1>⚡ <span>Power the Future</span></h1>
+    <p>List your EV charging station on SharePlug and reach thousands of EV drivers.</p>
+  </div>
+  <div class="bl-cta">
+    {% if has_profile %}
+    <a href="{% url 'station_register' %}" class="btn btn-primary btn-lg"><i class="fas fa-plus"></i> Register New Station</a>
+    <a href="{% url 'business_dashboard' %}" class="btn btn-secondary btn-lg"><i class="fas fa-chart-line"></i> Dashboard</a>
+    {% else %}
+    <a href="{% url 'business_profile_setup' %}" class="btn btn-primary btn-lg"><i class="fas fa-rocket"></i> Get Started</a>
+    {% endif %}
+  </div>
+  <div class="bl-features">
+    <div class="bl-feat"><i class="fas fa-users"></i><h3>Wider Reach</h3><p>Get visibility among thousands of EV drivers looking for charging in your area.</p></div>
+    <div class="bl-feat"><i class="fas fa-chart-bar"></i><h3>Analytics Dashboard</h3><p>Track bookings, usage patterns, and revenue from your stations.</p></div>
+    <div class="bl-feat"><i class="fas fa-shield-alt"></i><h3>Admin Verified</h3><p>All stations are reviewed by our team for quality assurance.</p></div>
+    <div class="bl-feat"><i class="fas fa-calendar-check"></i><h3>Booking System</h3><p>Accept bookings and manage time slots for your chargers.</p></div>
+  </div>
+  {% if registrations %}
+  <div class="bl-regs-title">Your Registrations</div>
+  {% for r in registrations %}
+  <div class="bl-reg">
+    <div><div class="bl-reg-name">{{ r.station_name }}</div><div class="bl-reg-city">{{ r.city }}, {{ r.state }}</div></div>
+    <span class="badge {% if r.status == 'approved' %}badge-green{% elif r.status == 'pending' %}badge-orange{% elif r.status == 'rejected' %}badge-gray{% else %}badge-blue{% endif %}">{{ r.get_status_display }}</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

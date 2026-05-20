@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .bk-page{max-width:800px;margin:40px auto;padding:0 20px;}
+  .bk-title{font-size:1.5rem;font-weight:700;margin-bottom:24px;text-align:center;}
+  .bk-card{display:flex;gap:16px;background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;transition:transform 0.2s;}
+  .bk-card:hover{transform:translateY(-2px);}
+  .bk-card img{width:110px;height:110px;object-fit:cover;border-radius:10px;flex-shrink:0;}
+  .bk-info{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .bk-info h3{font-size:1rem;font-weight:600;color:var(--green);}
+  .bk-info p{font-size:0.85rem;color:var(--text-muted);margin:0;}
+  .bk-actions{display:flex;gap:8px;margin-top:auto;}
+  .bk-actions a{font-size:0.82rem;padding:6px 12px;border-radius:6px;text-decoration:none;font-weight:500;transition:all 0.2s;}
+  .bk-view{background:var(--glass);color:var(--text);border:1px solid var(--border);}
+  .bk-view:hover{background:var(--glass-hover);}
+  .bk-remove{background:rgba(255,59,48,0.1);color:#ff3b30;border:1px solid rgba(255,59,48,0.2);}
+  .bk-remove:hover{background:rgba(255,59,48,0.2);}
+  .bk-empty{text-align:center;color:var(--text-muted);padding:60px 0;}
+</style>
+<div class="bk-page">
+  <div class="bk-title">⭐ My Saved Stations</div>
+  {% if bookmarks %}
+    {% for b in bookmarks %}
+    <div class="bk-card">
+      <img src="{% if b.station.image %}{{ b.station.image.url }}{% else %}/static/images/OIP.jpg{% endif %}" alt="{{ b.station.name }}">
+      <div class="bk-info">
+        <h3>{{ b.station.name }}</h3>
+        <p><i class="fas fa-map-marker-alt"></i> {{ b.station.city }}, {{ b.station.state }}</p>
+        <p>{{ b.station.address }}</p>
+        <div class="bk-actions">
+          <a href="/location/{{ b.station.id }}/" class="bk-view"><i class="fas fa-map"></i> View on Map</a>
+          <a href="{% url 'delete_bookmark' b.id %}" class="bk-remove"><i class="fas fa-trash"></i> Remove</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="bk-empty"><i class="fas fa-bookmark" style="font-size:2rem;display:block;margin-bottom:12px;"></i>No saved stations yet</div>
+  {% endif %}
+</div>
+{% endblock %}

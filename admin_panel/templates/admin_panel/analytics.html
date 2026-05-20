@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .aa-page{max-width:1100px;margin:40px auto;padding:0 20px;}
+  .aa-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+  .aa-head h1{font-size:1.6rem;font-weight:800;}
+  .aa-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+  .aa-nav a{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);transition:all 0.2s;}
+  .aa-nav a:hover,.aa-nav a.active{background:var(--green);color:var(--navy);border-color:var(--green);}
+  .aa-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+  .aa-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+  .aa-card-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;}
+  @media(max-width:800px){.aa-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="aa-page">
+  <div class="aa-head"><h1>📈 Analytics</h1></div>
+  <div class="aa-nav">
+    <a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Overview</a>
+    <a href="{% url 'admin_registrations' %}"><i class="fas fa-clipboard-check"></i> Registrations</a>
+    <a href="{% url 'admin_stations' %}"><i class="fas fa-charging-station"></i> Stations</a>
+    <a href="{% url 'admin_users' %}"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_bookings' %}"><i class="fas fa-calendar"></i> Bookings</a>
+    <a href="{% url 'admin_analytics' %}" class="active"><i class="fas fa-chart-line"></i> Analytics</a>
+  </div>
+
+  <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+    <div class="stat-card"><div class="stat-label">Total Stations</div><div class="stat-value" style="font-size:2.5rem;">{{ total_stations }}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" style="font-size:2.5rem;">{{ total_users }}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-value" style="font-size:2.5rem;">{{ total_bookings }}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Reviews</div><div class="stat-value" style="font-size:2.5rem;">{{ total_reviews }}</div></div>
+  </div>
+
+  <div class="aa-grid">
+    <div class="aa-card">
+      <div class="aa-card-title">Registrations (Last 30 Days)</div>
+      <canvas id="regChart" height="200"></canvas>
+    </div>
+    <div class="aa-card">
+      <div class="aa-card-title">Stations by State</div>
+      <canvas id="stateChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  Chart.defaults.color = '#8899bb';
+  Chart.defaults.font.family = 'Inter, sans-serif';
+  
+  // Registration Chart
+  const regData = {{ reg_data|safe|default:"[]" }};
+  new Chart(document.getElementById('regChart'), {
+    type: 'line',
+    data: {
+      labels: regData.map(d => d.day),
+      datasets: [{
+        label: 'New Registrations',
+        data: regData.map(d => d.count),
+        borderColor: '#00d4aa',
+        backgroundColor: 'rgba(0, 212, 170, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }
+    }
+  });
+
+  // State Chart
+  const stateData = {{ state_data|safe|default:"[]" }};
+  new Chart(document.getElementById('stateChart'), {
+    type: 'bar',
+    data: {
+      labels: stateData.map(d => d.state || 'Unknown'),
+      datasets: [{
+        label: 'Stations',
+        data: stateData.map(d => d.count),
+        backgroundColor: '#3b82f6',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .mb-page{max-width:900px;margin:40px auto;padding:0 20px;}
+  .mb-title{font-size:1.6rem;font-weight:700;margin-bottom:24px;}
+  .mb-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px;transition:transform 0.2s;}
+  .mb-card:hover{transform:translateY(-2px);}
+  .mb-main{flex:1;}
+  .mb-station{font-size:1.1rem;font-weight:600;color:var(--green);margin-bottom:4px;}
+  .mb-details{color:var(--text-muted);font-size:0.9rem;}
+  .mb-time{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600;}
+  .mb-time i{color:var(--green);}
+  .mb-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  @media(max-width:600px){.mb-card{flex-direction:column;align-items:flex-start;}.mb-actions{width:100%;flex-direction:row;justify-content:space-between;align-items:center;}}
+</style>
+<div class="mb-page">
+  <div class="mb-title">📅 My Bookings</div>
+  {% for b in bookings %}
+  <div class="mb-card" style="opacity: {% if b.status == 'cancelled' %}0.6{% else %}1{% endif %};">
+    <div class="mb-main">
+      <div class="mb-station">{{ b.station.name }}</div>
+      <div class="mb-details">{{ b.station.address }}, {{ b.station.city }}</div>
+      <div class="mb-details" style="margin-top:4px;">Vehicle: {{ b.vehicle_number }} {% if b.vehicle_model %}({{ b.vehicle_model }}){% endif %}</div>
+      <div class="mb-time">
+        <i class="fas fa-clock"></i> {{ b.time_slot.date|date:"d M Y" }} | {{ b.time_slot.start_time|time:"h:i A" }} - {{ b.time_slot.end_time|time:"h:i A" }}
+      </div>
+    </div>
+    <div class="mb-actions">
+      <span class="badge {% if b.status == 'confirmed' %}badge-green{% elif b.status == 'cancelled' %}badge-gray{% else %}badge-blue{% endif %}">{{ b.get_status_display }}</span>
+      <div style="font-weight:700;font-size:1.1rem;">₹{{ b.estimated_cost }}</div>
+      {% if b.status == 'confirmed' %}
+      <form method="POST" action="{% url 'cancel_booking' b.id %}" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Cancel</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div style="text-align:center;padding:60px 0;color:var(--text-muted);background:var(--navy-card);border-radius:var(--radius);border:1px solid var(--border);">
+    <i class="fas fa-calendar-times" style="font-size:3rem;margin-bottom:16px;opacity:0.5;"></i>
+    <h3>No Bookings Yet</h3>
+    <p style="margin-top:8px;">You haven't made any reservations.</p>
+    <a href="/" class="btn btn-primary" style="margin-top:16px;">Find a Station</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<style>.as-page{max-width:1000px;margin:40px auto;padding:0 20px;}.adm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}.adm-head h1{font-size:1.6rem;font-weight:800;}.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}.adm-nav a{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);transition:all 0.2s;}.adm-nav a:hover,.adm-nav a.active{background:var(--green);color:var(--navy);border-color:var(--green);}</style>
+<div class="as-page">
+  <div class="adm-head"><h1>⚡ Manage Stations</h1></div>
+  <div class="adm-nav">
+    <a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Overview</a>
+    <a href="{% url 'admin_registrations' %}"><i class="fas fa-clipboard-check"></i> Registrations</a>
+    <a href="{% url 'admin_stations' %}" class="active"><i class="fas fa-charging-station"></i> Stations</a>
+    <a href="{% url 'admin_users' %}"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_bookings' %}"><i class="fas fa-calendar"></i> Bookings</a>
+    <a href="{% url 'admin_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+  </div>
+  <h2 style="margin-bottom:20px;">⚡ Manage Stations ({{ stations.count }})</h2>
+  <div class="card" style="overflow-x:auto;">
+    <table class="sp-table">
+      <thead><tr><th>Name</th><th>City</th><th>State</th><th>Chargers</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for s in stations %}
+      <tr id="row-{{ s.id }}">
+        <td style="font-weight:600;">{{ s.name }}</td>
+        <td>{{ s.city }}</td>
+        <td>{{ s.state }}</td>
+        <td>{{ s.num_chargers }}</td>
+        <td><span class="badge {% if s.is_active %}badge-green{% else %}badge-gray{% endif %}" id="badge-{{ s.id }}">{% if s.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        <td><button class="btn btn-sm {% if s.is_active %}btn-danger{% else %}btn-primary{% endif %}" onclick="toggleStation({{ s.id }})" id="toggle-{{ s.id }}">{% if s.is_active %}Deactivate{% else %}Activate{% endif %}</button></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+function toggleStation(id){
+  fetch(`/admin-panel/stations/${id}/toggle/`,{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+  .then(r=>r.json()).then(d=>{
+    const b=document.getElementById('badge-'+id),t=document.getElementById('toggle-'+id);
+    if(d.is_active){b.className='badge badge-green';b.textContent='Active';t.className='btn btn-sm btn-danger';t.textContent='Deactivate';}
+    else{b.className='badge badge-gray';b.textContent='Inactive';t.className='btn btn-sm btn-primary';t.textContent='Activate';}
+  });
+}
+</script>
+{% endblock %}

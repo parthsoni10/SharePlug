@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<style>
+  .page-body { padding-top: var(--nav-h); }
+  #map { height: calc(100vh - var(--nav-h)); width: 100%; }
+  /* Search */
+  .map-search { position:absolute; top:80px; left:50%; transform:translateX(-50%); z-index:2000; width:min(440px,90vw); }
+  .map-search input { width:100%; padding:14px 48px 14px 18px; border-radius:12px; border:1px solid var(--border); background:rgba(10,22,40,0.92); backdrop-filter:blur(16px); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; }
+  .map-search input:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-glow); }
+  .map-search input::placeholder { color:var(--text-muted); }
+  .map-search-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); background:var(--green); border:none; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--navy); }
+  .map-controls { position:absolute; top:80px; right:16px; z-index:2000; display:flex; flex-direction:column; gap:8px; }
+  .map-ctrl-btn { width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:rgba(10,22,40,0.88); backdrop-filter:blur(12px); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; transition:all 0.2s; }
+  .map-ctrl-btn:hover { background:var(--green); color:var(--navy); }
+  /* Sidebar */
+  #sidebar { position:fixed; top:var(--nav-h); left:0; width:420px; height:calc(100vh - var(--nav-h)); background:var(--navy-light); border-right:1px solid var(--border); z-index:3000; transform:translateX(-100%); transition:transform 0.35s cubic-bezier(.4,0,.2,1); overflow-y:auto; }
+  #sidebar.open { transform:translateX(0); }
+  .sb-close { position:absolute; top:14px; right:14px; background:rgba(0,0,0,0.4); border:none; color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; z-index:10; }
+  .sb-img { width:100%; height:200px; object-fit:cover; background:var(--navy-card); }
+  .sb-body { padding:20px; }
+  .sb-name { font-size:1.3rem; font-weight:700; margin-bottom:4px; }
+  .sb-loc { color:var(--text-muted); font-size:0.85rem; margin-bottom:16px; }
+  .sb-rating { display:flex; align-items:center; gap:6px; margin-bottom:16px; }
+  .sb-stars { color:#ffc107; font-size:0.9rem; }
+  .sb-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:20px; }
+  .sb-act { display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 4px; border-radius:10px; background:var(--glass); border:1px solid var(--border); cursor:pointer; color:var(--text-muted); font-size:0.72rem; font-weight:500; transition:all 0.2s; text-decoration:none; }
+  .sb-act:hover { background:var(--green-glow); color:var(--green); border-color:rgba(0,212,170,0.3); }
+  .sb-act i { font-size:1.1rem; }
+  .sb-section { margin-bottom:16px; }
+  .sb-section-title { font-size:0.78rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+  .sb-info-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.88rem; }
+  .sb-info-row i { width:18px; text-align:center; color:var(--green); margin-top:2px; }
+  .sb-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .sb-gallery img { width:100%; height:70px; object-fit:cover; border-radius:6px; cursor:pointer; }
+  .sb-book-btn { width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--green),#00a8ff); color:var(--navy); font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.2s; margin-top:16px; }
+  .sb-book-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,170,0.3); }
+  /* Review form */
+  .review-stars { display:flex; gap:4px; margin-bottom:8px; }
+  .review-stars i { cursor:pointer; font-size:1.3rem; color:var(--text-muted); transition:color 0.15s; }
+  .review-stars i.active { color:#ffc107; }
+  .review-input { width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-family:inherit; resize:none; }
+  /* Responsive */
+  @media(max-width:768px) {
+    #sidebar { width:100%; }
+    .map-search { top:74px; width:calc(100vw - 70px); left:8px; transform:none; }
+    .map-controls { top:74px; right:8px; }
+  }
+  /* Custom cluster */
+  .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:rgba(0,212,170,0.25); }
+  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background:var(--green); color:var(--navy); font-weight:700; font-size:0.8rem; }
+  .leaflet-control-zoom { display:none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="map-search">
+  <input type="text" id="search-input" placeholder="Search city, address, or station name..." autocomplete="off">
+  <button class="map-search-btn" id="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+</div>
+
+<!-- Map Controls -->
+<div class="map-controls">
+  <button class="map-ctrl-btn" id="locate-btn" title="My Location"><i class="fas fa-crosshairs"></i></button>
+  <button class="map-ctrl-btn" id="nearest-btn" title="Find Nearest"><i class="fas fa-bolt"></i></button>
+  <button class="map-ctrl-btn" id="zoom-in" title="Zoom In"><i class="fas fa-plus"></i></button>
+  <button class="map-ctrl-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-minus"></i></button>
+</div>
+
+<!-- Map -->
+<div id="map"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <button class="sb-close" id="sb-close"><i class="fas fa-times"></i></button>
+  <img class="sb-img" id="sb-img" src="{% static 'images/OIP.jpg' %}" alt="Station">
+  <div class="sb-body">
+    <div class="sb-name" id="sb-name">Select a Station</div>
+    <div class="sb-loc" id="sb-loc">Click a marker on the map</div>
+    <div class="sb-rating" id="sb-rating" style="display:none;">
+      <span class="sb-stars" id="sb-stars"></span>
+      <span id="sb-rating-val" style="font-weight:600;"></span>
+    </div>
+
+    <div class="sb-actions">
+      <button class="sb-act" id="act-checkin" disabled><i class="fas fa-check-circle"></i>Check In</button>
+      <button class="sb-act" id="act-bookmark" disabled><i class="fas fa-bookmark"></i><span id="bk-label">Save</span></button>
+      <button class="sb-act" id="act-directions" disabled><i class="fas fa-directions"></i>Directions</button>
+      <label class="sb-act" id="act-photo" style="cursor:pointer;"><i class="fas fa-camera"></i>Photo<input type="file" id="photo-input" accept="image/*" hidden></label>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-title">Station Details</div>
+      <div class="sb-info-row"><i class="fas fa-map-marker-alt"></i><span id="sb-address">—</span></div>
+      <div class="sb-info-row"><i class="fas fa-city"></i><span id="sb-city">—</span></div>
+      <div class="sb-info-row"><i class="fas fa-globe-asia"></i><span id="sb-state">—</span></div>
+      <div class="sb-info-row"><i class="fas fa-plug"></i><span id="sb-charger-type">—</span></div>
+      <div class="sb-info-row"><i class="fas fa-charging-station"></i><span id="sb-chargers">—</span></div>
+      <div class="sb-info-row"><i class="fas fa-circle" id="sb-status-icon"></i><span id="sb-status">—</span></div>
+    </div>
+
+    <div class="sb-section" id="sb-gallery-section" style="display:none;">
+      <div class="sb-section-title">Photos</div>
+      <div class="sb-gallery" id="sb-gallery"></div>
+    </div>
+
+    <a class="sb-book-btn" id="sb-book-btn" style="display:block;text-align:center;text-decoration:none;">⚡ Book This Station</a>
+
+    <!-- Review Section -->
+    <div class="sb-section" style="margin-top:20px;">
+      <div class="sb-section-title">Leave a Review</div>
+      <div class="review-stars" id="review-stars">
+        <i class="fas fa-star" data-val="1"></i><i class="fas fa-star" data-val="2"></i><i class="fas fa-star" data-val="3"></i><i class="fas fa-star" data-val="4"></i><i class="fas fa-star" data-val="5"></i>
+      </div>
+      <textarea class="review-input" id="review-comment" rows="2" placeholder="Write a comment (optional)"></textarea>
+      <button class="btn btn-primary btn-sm btn-full" style="margin-top:8px;" id="submit-review">Submit Review</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+(function(){
+  const csrfToken = '{{ csrf_token }}';
+  let currentStationId = null, selectedLat = null, selectedLng = null;
+  let userMarker = null, nearestMarker = null, nearestRoute = null;
+  let reviewRating = 0;
+
+  // ── MAP ──
+  const map = L.map('map', {zoomControl:false}).setView([22.5,78.9],5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO', maxZoom:19
+  }).addTo(map);
+
+  const markers = L.markerClusterGroup({maxClusterRadius:50,spiderfyOnMaxZoom:true,showCoverageOnHover:false});
+  map.addLayer(markers);
+
+  const greenIcon = L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:var(--green,#00d4aa);border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#0a1628;font-size:12px;"></i></div>',iconSize:[28,28],iconAnchor:[14,14]});
+  const redIcon = L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:#ff3b30;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#fff;font-size:12px;"></i></div>',iconSize:[28,28],iconAnchor:[14,14]});
+
+  const stationIds = new Set();
+
+  function loadStations(){
+    const b = map.getBounds();
+    fetch(`/api/stations/?sw_lat=${b.getSouthWest().lat}&sw_lng=${b.getSouthWest().lng}&ne_lat=${b.getNorthEast().lat}&ne_lng=${b.getNorthEast().lng}`)
+    .then(r=>r.json()).then(d=>{
+      (d.stations||[]).forEach(s=>{
+        if(stationIds.has(s.id)) return;
+        stationIds.add(s.id);
+        const icon = s.availability_status ? greenIcon : redIcon;
+        const m = L.marker([s.latitude,s.longitude],{icon}).on('click',()=>openStation(s.id));
+        m.bindTooltip(s.name,{direction:'top',offset:[0,-14]});
+        markers.addLayer(m);
+      });
+    }).catch(()=>{});
+  }
+  map.on('moveend',loadStations);
+  loadStations();
+
+  // ── OPEN STATION ──
+  function openStation(id){
+    currentStationId = id;
+    fetch(`/location/${id}/`,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(r=>r.json()).then(d=>{
+      if(d.error) return;
+      document.getElementById('sb-name').textContent = d.name;
+      document.getElementById('sb-loc').textContent = `${d.city}, ${d.state}`;
+      document.getElementById('sb-address').textContent = d.address;
+      document.getElementById('sb-city').textContent = d.city;
+      document.getElementById('sb-state').textContent = d.state;
+      document.getElementById('sb-charger-type').textContent = d.charger_types||'—';
+      document.getElementById('sb-chargers').textContent = (d.num_chargers||0)+' charger(s)';
+      const statusEl = document.getElementById('sb-status');
+      const statusIcon = document.getElementById('sb-status-icon');
+      if(d.availability_status){statusEl.textContent='Available';statusIcon.style.color='var(--green)';}
+      else{statusEl.textContent='Unavailable';statusIcon.style.color='#ff3b30';}
+      const img = document.getElementById('sb-img');
+      img.src = d.image ? d.image : '/static/images/OIP.jpg';
+      img.onerror = function(){this.src='/static/images/OIP.jpg';};
+      selectedLat = d.latitude; selectedLng = d.longitude;
+      // Rating
+      const rDiv = document.getElementById('sb-rating');
+      if(d.avg_rating){rDiv.style.display='flex';document.getElementById('sb-stars').innerHTML='★'.repeat(Math.round(d.avg_rating))+'☆'.repeat(5-Math.round(d.avg_rating));document.getElementById('sb-rating-val').textContent=d.avg_rating+'/5';}
+      else{rDiv.style.display='none';}
+      // Bookmark
+      const bkLabel = document.getElementById('bk-label');
+      bkLabel.textContent = d.bookmarked ? 'Saved ✓' : 'Save';
+      // Enable buttons
+      document.getElementById('act-checkin').disabled=false;
+      document.getElementById('act-bookmark').disabled=false;
+      document.getElementById('act-directions').disabled=false;
+      document.getElementById('sb-book-btn').href = `/book/station/${id}/`;
+      document.getElementById('sidebar').classList.add('open');
+      history.pushState({},'',`/location/${id}/`);
+      loadGallery(id);
+    }).catch(e=>console.error(e));
+  }
+
+  // ── CLOSE SIDEBAR ──
+  document.getElementById('sb-close').onclick = ()=>{document.getElementById('sidebar').classList.remove('open');history.pushState({},'','/');};
+  map.on('click',()=>{document.getElementById('sidebar').classList.remove('open');history.pushState({},'','/');});
+
+  // ── SEARCH ──
+  function doSearch(){
+    const q = document.getElementById('search-input').value.trim();
+    if(!q) return;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&limit=1`)
+    .then(r=>r.json()).then(data=>{
+      if(!data.length){alert('Location not found');return;}
+      map.flyTo([parseFloat(data[0].lat),parseFloat(data[0].lon)],13,{duration:1.5});
+    }).catch(()=>alert('Search failed'));
+  }
+  document.getElementById('search-btn').onclick = doSearch;
+  document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+
+  // ── MAP CONTROLS ──
+  document.getElementById('zoom-in').onclick = ()=>map.zoomIn();
+  document.getElementById('zoom-out').onclick = ()=>map.zoomOut();
+  document.getElementById('locate-btn').onclick = ()=>{
+    navigator.geolocation.getCurrentPosition(p=>{
+      const ll=[p.coords.latitude,p.coords.longitude];
+      if(userMarker) map.removeLayer(userMarker);
+      userMarker = L.marker(ll,{icon:L.divIcon({className:'',html:'<div style="width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(59,130,246,0.5);"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map).bindPopup('You are here').openPopup();
+      map.flyTo(ll,14,{duration:1});
+    },()=>alert('Enable location access'));
+  };
+  document.getElementById('nearest-btn').onclick = ()=>{
+    navigator.geolocation.getCurrentPosition(p=>{
+      const lat=p.coords.latitude,lng=p.coords.longitude;
+      if(userMarker) map.removeLayer(userMarker);
+      if(nearestMarker) map.removeLayer(nearestMarker);
+      if(nearestRoute) map.removeLayer(nearestRoute);
+      userMarker = L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map);
+      fetch(`/get-nearest-station/?latitude=${lat}&longitude=${lng}`).then(r=>r.json()).then(d=>{
+        if(d.error){alert(d.error);return;}
+        nearestMarker = L.marker(d.coordinates,{icon:greenIcon}).addTo(map).bindPopup(`<b>${d.name}</b><br>${d.distance} km away`).openPopup();
+        nearestRoute = L.polyline([[lat,lng],d.coordinates],{color:'#00d4aa',weight:3,dashArray:'8,8'}).addTo(map);
+        map.fitBounds(L.featureGroup([userMarker,nearestMarker]).getBounds(),{padding:[80,80]});
+        openStation(d.id);
+      });
+    },()=>alert('Enable GPS'));
+  };
+
+  // ── ACTIONS ──
+  document.getElementById('act-checkin').onclick = ()=>{if(currentStationId)window.location.href=`/checkin/${currentStationId}/`;};
+  document.getElementById('act-bookmark').onclick = ()=>{
+    if(!currentStationId) return;
+    fetch(`/bookmark/${currentStationId}/`,{method:'POST',headers:{'X-CSRFToken':csrfToken}})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('bk-label').textContent = d.bookmarked ? 'Saved ✓' : 'Save';
+    });
+  };
+  document.getElementById('act-directions').onclick = ()=>{
+    if(!selectedLat) return;
+    navigator.geolocation.getCurrentPosition(p=>{
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${p.coords.latitude},${p.coords.longitude}&destination=${selectedLat},${selectedLng}&travelmode=driving`,'_blank');
+    },()=>alert('Enable location'));
+  };
+  document.getElementById('photo-input').addEventListener('change',function(){
+    if(!this.files[0]||!currentStationId) return;
+    const fd=new FormData(); fd.append('image',this.files[0]);
+    fetch(`/station/${currentStationId}/upload-image/`,{method:'POST',headers:{'X-CSRFToken':csrfToken},body:fd})
+    .then(r=>r.json()).then(d=>{if(d.success){alert('Photo uploaded!');loadGallery(currentStationId);}else alert(d.error||'Upload failed');});
+  });
+
+  function loadGallery(id){
+    fetch(`/station/${id}/images/`).then(r=>r.json()).then(d=>{
+      const g=document.getElementById('sb-gallery'),s=document.getElementById('sb-gallery-section');
+      g.innerHTML='';
+      if(d.images&&d.images.length){s.style.display='block';d.images.forEach(u=>{const i=document.createElement('img');i.src=u;g.appendChild(i);});}
+      else s.style.display='none';
+    });
+  }
+
+  // ── REVIEWS ──
+  document.querySelectorAll('#review-stars i').forEach(star=>{
+    star.addEventListener('click',function(){
+      reviewRating = parseInt(this.dataset.val);
+      document.querySelectorAll('#review-stars i').forEach((s,i)=>{s.classList.toggle('active',i<reviewRating);});
+    });
+    star.addEventListener('mouseenter',function(){
+      const v=parseInt(this.dataset.val);
+      document.querySelectorAll('#review-stars i').forEach((s,i)=>{s.classList.toggle('active',i<v);});
+    });
+  });
+  document.getElementById('review-stars').addEventListener('mouseleave',()=>{
+    document.querySelectorAll('#review-stars i').forEach((s,i)=>{s.classList.toggle('active',i<reviewRating);});
+  });
+  document.getElementById('submit-review').onclick = ()=>{
+    if(!currentStationId||!reviewRating){alert('Select a rating');return;}
+    const fd=new FormData();fd.append('rating',reviewRating);fd.append('comment',document.getElementById('review-comment').value);
+    fetch(`/station/${currentStationId}/review/`,{method:'POST',headers:{'X-CSRFToken':csrfToken},body:fd})
+    .then(r=>r.json()).then(d=>{
+      if(d.success){alert('Review submitted!');if(d.avg_rating){document.getElementById('sb-rating').style.display='flex';document.getElementById('sb-stars').innerHTML='★'.repeat(Math.round(d.avg_rating))+'☆'.repeat(5-Math.round(d.avg_rating));document.getElementById('sb-rating-val').textContent=d.avg_rating+'/5';}}
+    });
+  };
+
+  // ── AUTO-OPEN FROM URL ──
+  const selId = '{{ selected_station_id|default:"" }}';
+  if(selId) openStation(parseInt(selId));
+})();
+</script>
+{% endblock %}

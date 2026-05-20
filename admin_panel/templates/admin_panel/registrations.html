@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<style>.ar-page{max-width:1000px;margin:40px auto;padding:0 20px;}.adm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}.adm-head h1{font-size:1.6rem;font-weight:800;}.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}.adm-nav a{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);transition:all 0.2s;}.adm-nav a:hover,.adm-nav a.active{background:var(--green);color:var(--navy);border-color:var(--green);}.ar-tabs{display:flex;gap:6px;margin-bottom:24px;}.ar-tabs a{padding:8px 18px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);}.ar-tabs a.active{background:var(--green);color:var(--navy);border-color:var(--green);}.ar-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}.ar-info h3{font-size:1rem;font-weight:600;margin-bottom:2px;}.ar-info p{font-size:0.82rem;color:var(--text-muted);}.ar-meta{text-align:right;font-size:0.82rem;color:var(--text-muted);}}</style>
+<div class="ar-page">
+  <div class="adm-head"><h1>📋 Station Registrations</h1></div>
+  <div class="adm-nav">
+    <a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Overview</a>
+    <a href="{% url 'admin_registrations' %}" class="active"><i class="fas fa-clipboard-check"></i> Registrations {% if pending_regs %}<span class="badge badge-orange" style="margin-left:4px;">{{ pending_regs }}</span>{% endif %}</a>
+    <a href="{% url 'admin_stations' %}"><i class="fas fa-charging-station"></i> Stations</a>
+    <a href="{% url 'admin_users' %}"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_bookings' %}"><i class="fas fa-calendar"></i> Bookings</a>
+    <a href="{% url 'admin_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+  </div>
+  <div class="ar-tabs">
+    <a href="?status=pending" class="{% if status_filter == 'pending' %}active{% endif %}">Pending ({{ counts.pending }})</a>
+    <a href="?status=approved" class="{% if status_filter == 'approved' %}active{% endif %}">Approved ({{ counts.approved }})</a>
+    <a href="?status=rejected" class="{% if status_filter == 'rejected' %}active{% endif %}">Rejected ({{ counts.rejected }})</a>
+    <a href="?status=draft" class="{% if status_filter == 'draft' %}active{% endif %}">Draft ({{ counts.draft }})</a>
+  </div>
+  {% for r in registrations %}
+  <div class="ar-card">
+    <div class="ar-info">
+      <h3><a href="{% url 'admin_registration_detail' r.id %}" style="color:var(--text);text-decoration:none;">{{ r.station_name }}</a></h3>
+      <p>{{ r.city }}, {{ r.state }} · Owner: {{ r.owner.username }} · {% for c in r.chargers.all %}{{ c.charger_type }} {% endfor %}</p>
+    </div>
+    <div class="ar-meta">
+      <span class="badge {% if r.status == 'pending' %}badge-orange{% elif r.status == 'approved' %}badge-green{% else %}badge-gray{% endif %}">{{ r.get_status_display }}</span>
+      <div style="margin-top:4px;">{{ r.submitted_at|date:"d M Y" }}</div>
+      <a href="{% url 'admin_registration_detail' r.id %}" class="btn btn-sm btn-secondary" style="margin-top:6px;"><i class="fas fa-eye"></i> Review</a>
+    </div>
+  </div>
+  {% empty %}<p style="text-align:center;color:var(--text-muted);padding:40px;">No {{ status_filter }} registrations.</p>{% endfor %}
+</div>
+{% endblock %}

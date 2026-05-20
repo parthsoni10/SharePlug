@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .bk-page{max-width:800px;margin:40px auto;padding:0 20px;}
+  .bk-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);}
+  .bk-title{font-size:1.4rem;font-weight:700;margin-bottom:24px;text-align:center;}
+  .bk-station{display:flex;align-items:center;gap:16px;background:var(--glass);padding:16px;border-radius:12px;margin-bottom:24px;}
+  .bk-station img{width:80px;height:80px;border-radius:8px;object-fit:cover;}
+  .bk-station-info h3{font-size:1.1rem;margin-bottom:4px;}
+  .bk-station-info p{color:var(--text-muted);font-size:0.85rem;}
+  .bk-dates{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;margin-bottom:20px;scrollbar-width:none;}
+  .bk-dates::-webkit-scrollbar{display:none;}
+  .bk-date{min-width:70px;text-align:center;padding:10px 4px;border-radius:10px;background:var(--glass);border:1px solid var(--border);color:var(--text-muted);text-decoration:none;transition:all 0.2s;}
+  .bk-date.active{background:var(--green);color:var(--navy);border-color:var(--green);font-weight:600;}
+  .bk-date:hover:not(.active){background:var(--glass-hover);}
+  .bk-date-d{font-size:1.2rem;font-weight:700;}
+  .bk-date-m{font-size:0.75rem;text-transform:uppercase;}
+  .bk-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:32px;}
+  .bk-slot{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;}
+  .bk-slot:hover{border-color:var(--green);background:var(--green-glow);}
+  .bk-slot.selected{background:var(--green);color:var(--navy);border-color:var(--green);}
+  .bk-slot-time{font-size:0.9rem;font-weight:600;margin-bottom:4px;}
+  .bk-slot-price{font-size:0.8rem;opacity:0.8;}
+  .bk-form{display:none;background:var(--glass);padding:24px;border-radius:12px;border:1px solid var(--border);}
+  .bk-form.active{display:block;animation:fadeIn 0.3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+</style>
+<div class="bk-page">
+  <div class="bk-card">
+    <div class="bk-title">Book a Charging Slot</div>
+    <div class="bk-station">
+      <img src="{% if station.image %}{{ station.image.url }}{% else %}/static/images/OIP.jpg{% endif %}" alt="{{ station.name }}">
+      <div class="bk-station-info">
+        <h3>{{ station.name }}</h3>
+        <p>{{ station.address }}, {{ station.city }}</p>
+        <p style="margin-top:4px;"><i class="fas fa-charging-station" style="color:var(--green);"></i> {{ station.charger_types }}</p>
+      </div>
+    </div>
+    
+    <div class="section-title">1. Select Date</div>
+    <div class="bk-dates">
+      {% for d in available_dates %}
+      <a href="?date={{ d|date:'Y-m-d' }}" class="bk-date {% if d == selected_date %}active{% endif %}">
+        <div class="bk-date-d">{{ d|date:"d" }}</div>
+        <div class="bk-date-m">{{ d|date:"M" }}</div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="section-title">2. Select Time Slot</div>
+    <div class="bk-slots">
+      {% for s in slots %}
+      <div class="bk-slot" onclick="selectSlot({{ s.id }}, '{{ s.start_time|time:'h:i A' }} - {{ s.end_time|time:'h:i A' }}', {{ s.price }})" id="slot-{{ s.id }}">
+        <div class="bk-slot-time">{{ s.start_time|time:"h:i A" }}</div>
+        <div class="bk-slot-price">₹{{ s.price }}</div>
+      </div>
+      {% empty %}
+      <p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">No available slots for this date.</p>
+      {% endfor %}
+    </div>
+
+    <div id="booking-form-container" class="bk-form">
+      <div class="section-title" style="margin-top:0;">3. Confirm Details</div>
+      <p style="margin-bottom:16px;">Selected Slot: <strong id="selected-time-display" style="color:var(--green);"></strong></p>
+      <form method="POST" id="confirm-form">
+        {% csrf_token %}
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Vehicle Number *</label>
+            <input type="text" class="form-control" name="vehicle_number" required placeholder="MH01AB1234">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehicle Model (Optional)</label>
+            <input type="text" class="form-control" name="vehicle_model" placeholder="Nexon EV">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:16px;">
+          Confirm Booking · ₹<span id="btn-price">0</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function selectSlot(id, timeStr, price) {
+  document.querySelectorAll('.bk-slot').forEach(el => el.classList.remove('selected'));
+  document.getElementById('slot-'+id).classList.add('selected');
+  document.getElementById('selected-time-display').textContent = timeStr;
+  document.getElementById('btn-price').textContent = price;
+  document.getElementById('confirm-form').action = '/book/confirm/' + id + '/';
+  document.getElementById('booking-form-container').classList.add('active');
+  document.getElementById('booking-form-container').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+</script>
+{% endblock %}

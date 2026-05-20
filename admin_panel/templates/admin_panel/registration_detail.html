@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block extra_head %}<style>.rd-page{max-width:800px;margin:40px auto;padding:0 20px;}.rd-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px;}.rd-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}.rd-name{font-size:1.3rem;font-weight:700;}.rd-owner{color:var(--text-muted);font-size:0.85rem;margin-top:4px;}.rd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}.rd-item{background:var(--glass);border-radius:8px;padding:12px;}.rd-item-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}.rd-item-val{font-size:0.95rem;}.rd-chargers{margin-bottom:20px;}.rd-charger{background:var(--glass);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;font-size:0.88rem;}.rd-map{height:250px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border);}.rd-actions{display:flex;gap:12px;margin-top:20px;}.rd-reject-form{margin-top:16px;}</style>{% endblock %}
+{% block content %}
+<div class="rd-page">
+  <div class="rd-card">
+    <div class="rd-head">
+      <div><div class="rd-name">{{ reg.station_name }}</div><div class="rd-owner">By {{ reg.owner.first_name }} {{ reg.owner.last_name }} ({{ reg.owner.username }}) · Submitted {{ reg.submitted_at|date:"d M Y, h:i A" }}</div></div>
+      <span class="badge {% if reg.status == 'pending' %}badge-orange{% elif reg.status == 'approved' %}badge-green{% else %}badge-gray{% endif %}">{{ reg.get_status_display }}</span>
+    </div>
+    <div class="rd-grid">
+      <div class="rd-item"><div class="rd-item-label">City</div><div class="rd-item-val">{{ reg.city }}</div></div>
+      <div class="rd-item"><div class="rd-item-label">State</div><div class="rd-item-val">{{ reg.state }}</div></div>
+      <div class="rd-item"><div class="rd-item-label">Address</div><div class="rd-item-val">{{ reg.address }}</div></div>
+      <div class="rd-item"><div class="rd-item-label">Description</div><div class="rd-item-val">{{ reg.description|default:"—" }}</div></div>
+    </div>
+    {% if reg.latitude and reg.longitude %}<div class="rd-map" id="rd-map"></div>{% endif %}
+    {% if reg.station_image %}<img src="{{ reg.station_image.url }}" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-bottom:16px;" alt="Station image">{% endif %}
+    <div class="rd-chargers"><div class="section-title" style="font-size:1rem;">🔌 Charger Details</div>
+      {% for c in chargers %}<div class="rd-charger"><span>{{ c.get_charger_type_display }}</span><span>{{ c.power_kw }} kW</span><span>×{{ c.connector_count }}</span><span>₹{{ c.price_per_kwh }}/kWh</span></div>{% empty %}<p style="color:var(--text-muted);">No chargers specified</p>{% endfor %}
+    </div>
+    {% if reg.status == 'pending' %}
+    <div class="rd-actions">
+      <form method="POST" action="{% url 'admin_approve' reg.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-check"></i> Approve Station</button></form>
+    </div>
+    <div class="rd-reject-form">
+      <form method="POST" action="{% url 'admin_reject' reg.id %}">{% csrf_token %}
+        <textarea class="form-control" name="reason" rows="2" placeholder="Rejection reason (required)" required></textarea>
+        <button type="submit" class="btn btn-danger" style="margin-top:8px;"><i class="fas fa-times"></i> Reject</button>
+      </form>
+    </div>
+    {% endif %}
+    {% if reg.admin_notes %}<div style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.2);border-radius:8px;padding:12px;margin-top:16px;font-size:0.88rem;color:var(--orange);"><strong>Admin Notes:</strong> {{ reg.admin_notes }}</div>{% endif %}
+  </div>
+  <a href="{% url 'admin_registrations' %}" style="color:var(--text-muted);text-decoration:none;font-size:0.88rem;"><i class="fas fa-arrow-left"></i> Back to Registrations</a>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% if reg.latitude and reg.longitude %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var m=L.map('rd-map').setView([{{reg.latitude}},{{reg.longitude}}],14);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(m);L.marker([{{reg.latitude}},{{reg.longitude}}]).addTo(m);setTimeout(()=>m.invalidateSize(),200);
+</script>
+{% endif %}
+{% endblock %}

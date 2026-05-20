@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .bp-page{max-width:600px;margin:40px auto;padding:0 20px;}
+  .bp-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);}
+  .bp-title{font-size:1.4rem;font-weight:700;margin-bottom:6px;text-align:center;}
+  .bp-sub{color:var(--text-muted);font-size:0.9rem;text-align:center;margin-bottom:28px;}
+  .bp-step{display:flex;align-items:center;gap:10px;margin-bottom:24px;font-size:0.82rem;color:var(--text-muted);}
+  .bp-step-num{width:28px;height:28px;border-radius:50%;background:var(--green);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;}
+  .bp-step-active{color:var(--green);font-weight:600;}
+</style>
+<div class="bp-page">
+  <div class="bp-card">
+    <div class="bp-step"><span class="bp-step-num">1</span><span class="bp-step-active">Business Profile</span> → <span>Station Details</span> → <span>Submit</span></div>
+    <div class="bp-title">Business Profile</div>
+    <div class="bp-sub">Tell us about your business</div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Business Name *</label>
+        <input type="text" class="form-control" name="business_name" value="{{ profile.business_name|default:'' }}" required placeholder="e.g. Green Energy Pvt Ltd">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Business Type *</label>
+        <select class="form-control" name="business_type">
+          <option value="individual" {% if profile.business_type == 'individual' %}selected{% endif %}>Individual</option>
+          <option value="company" {% if profile.business_type == 'company' %}selected{% endif %}>Company / Organization</option>
+          <option value="government" {% if profile.business_type == 'government' %}selected{% endif %}>Government Entity</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number *</label>
+        <input type="tel" class="form-control" name="phone" value="{{ profile.phone|default:'' }}" required placeholder="+91 XXXXX XXXXX">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-control" name="email" value="{{ profile.email|default:'' }}" required placeholder="business@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">GST Number (optional)</label>
+        <input type="text" class="form-control" name="gst_number" value="{{ profile.gst_number|default:'' }}" placeholder="22AAAAA0000A1Z5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">PAN Number (optional)</label>
+        <input type="text" class="form-control" name="pan_number" value="{{ profile.pan_number|default:'' }}" placeholder="ABCDE1234F">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full btn-lg"><i class="fas fa-arrow-right"></i> Continue to Station Details</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .list-page{max-width:800px;margin:40px auto;padding:0 20px;}
+  .list-title{font-size:1.5rem;font-weight:700;margin-bottom:24px;text-align:center;}
+  .list-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:transform 0.2s;}
+  .list-card:hover{transform:translateY(-2px);}
+  .list-card h3{font-size:1.05rem;font-weight:600;color:var(--green);margin-bottom:6px;}
+  .list-card p{font-size:0.85rem;color:var(--text-muted);margin:3px 0;}
+  .list-note{background:var(--glass);border-radius:8px;padding:10px;margin-top:8px;font-size:0.85rem;color:var(--text);}
+  .list-empty{text-align:center;color:var(--text-muted);font-size:1rem;padding:60px 0;}
+  .list-back{display:block;text-align:center;margin-top:24px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
+  .list-back:hover{color:var(--green);}
+</style>
+<div class="list-page">
+  <div class="list-title">📍 My Check-In History</div>
+  {% if checkins %}
+    {% for ci in checkins %}
+    <div class="list-card">
+      <h3>{{ ci.station.name }}</h3>
+      <p><i class="fas fa-map-marker-alt" style="color:var(--green);"></i> {{ ci.station.address }}, {{ ci.station.city }}, {{ ci.station.state }}</p>
+      <p><i class="fas fa-clock" style="color:var(--green);"></i> {{ ci.checkin_time|date:"d M Y, h:i A" }}</p>
+      <p><i class="fas fa-charging-station" style="color:var(--green);"></i> {{ ci.station.num_chargers }} charger(s) · {{ ci.station.charger_types }}</p>
+      {% if ci.note %}<div class="list-note"><strong>📝 Note:</strong> {{ ci.note }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="list-empty"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:12px;"></i>No check-ins yet</div>
+  {% endif %}
+  <a href="/" class="list-back"><i class="fas fa-arrow-left"></i> Back to Map</a>
+</div>
+{% endblock %}

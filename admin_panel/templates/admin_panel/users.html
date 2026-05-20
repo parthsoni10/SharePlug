@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<style>.au-page{max-width:1000px;margin:40px auto;padding:0 20px;}.adm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}.adm-head h1{font-size:1.6rem;font-weight:800;}.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}.adm-nav a{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);transition:all 0.2s;}.adm-nav a:hover,.adm-nav a.active{background:var(--green);color:var(--navy);border-color:var(--green);}</style>
+<div class="au-page">
+  <div class="adm-head"><h1>👥 Users</h1></div>
+  <div class="adm-nav">
+    <a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Overview</a>
+    <a href="{% url 'admin_registrations' %}"><i class="fas fa-clipboard-check"></i> Registrations</a>
+    <a href="{% url 'admin_stations' %}"><i class="fas fa-charging-station"></i> Stations</a>
+    <a href="{% url 'admin_users' %}" class="active"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_bookings' %}"><i class="fas fa-calendar"></i> Bookings</a>
+    <a href="{% url 'admin_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+  </div>
+  <h2 style="margin-bottom:20px;">👥 Users ({{ users.count }})</h2>
+  <div class="card" style="overflow-x:auto;">
+    <table class="sp-table">
+      <thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Joined</th><th>Staff</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="font-weight:600;">{{ u.username }}</td>
+        <td>{{ u.first_name }} {{ u.last_name }}</td>
+        <td style="color:var(--text-muted);">{{ u.email|default:"—" }}</td>
+        <td>{{ u.date_joined|date:"d M Y" }}</td>
+        <td>{% if u.is_staff %}<span class="badge badge-orange">Staff</span>{% else %}<span class="badge badge-gray">User</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

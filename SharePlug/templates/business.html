@@ -1,0 +1,387 @@
+{% extends "base.html"%}
+{% block content%}
+
+<style>
+  :root {
+    --primary: #002b87;
+    --accent: #34c759;
+    --text-dark: #1a1a1a;
+    --text-light: #ffffff;
+    --bg-light: #f9f9f9;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  /* Navbar */
+  .navbar {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: bold;
+  }
+
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+  }
+
+  nav a {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  nav a:hover {
+    color: var(--primary);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff !important;
+    padding: 0.6rem 1.2rem;
+    border-radius: 30px;
+    transition: background 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent);
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    color: #fff;
+    text-align: center;
+    padding: 6rem 1rem;
+  }
+
+  .hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* About */
+  .about {
+    padding: 4rem 1rem;
+    background: #fff;
+    text-align: center;
+  }
+
+  .about h2 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+  }
+
+  /* Features */
+  .features {
+    background: var(--bg-light);
+    padding: 4rem 1rem;
+    text-align: center;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .feature-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  /* How It Works */
+  .how {
+    background: #fff;
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .step {
+    max-width: 250px;
+  }
+
+  .step .number {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    line-height: 40px;
+    margin-bottom: 1rem;
+  }
+
+  /* Contact */
+  .contact {
+    background: var(--primary);
+    color: #fff;
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 2rem auto 0;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    padding: 0.8rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+
+  .contact-form button {
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  /* Footer */
+  .footer {
+    background: #111;
+    color: #ccc;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .nav-content {
+      flex-direction: column;
+    }
+
+    nav ul {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .hero h2 {
+      font-size: 2rem;
+    }
+
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .contact-form input,
+  .contact-form textarea,
+  .contact-form button {
+    width: 100%;
+  }
+
+  /* Fix file input appearance */
+  .contact-form input[type="file"] {
+    background: #fff;
+    padding: 0.6rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+  }
+
+  /* Fix number input arrows */
+  .contact-form input[type="number"]::-webkit-inner-spin-button,
+  .contact-form input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Keep spacing consistent */
+  .contact-form input {
+    height: 45px;
+  }
+
+  /* Button consistency */
+  .contact-form button {
+    height: 48px;
+  }
+</style>
+
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <h1 class="logo">SharePlug</h1>
+      <nav>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How It Works</a></li>
+          <li><a href="#contact" class="btn-primary">Add Station</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-content">
+      <h2>Add Your EV Charger with EVConnect</h2>
+      <p>List your charging station on the most trusted EV network and reach thousands of EV drivers every day.</p>
+      <a href="#contact" class="btn-primary">Add Your Station</a>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container">
+      <h2>About EVConnect</h2>
+      <p>EVConnect helps EV station owners connect with the largest network of electric vehicle drivers. Our platform
+        makes it easy for you to showcase your station, attract more visitors, and manage your charging locations
+        efficiently.</p>
+    </div>
+  </section>
+  
+  <section id="features" class="features">
+    <div class="container">
+      <h2>Features & Benefits</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Wider Reach</h3>
+          <p>Get visibility among thousands of EV drivers looking for charging options in your area.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Real-Time Updates</h3>
+          <p>Keep your station’s details, pricing, and availability up to date effortlessly.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Analytics Dashboard</h3>
+          <p>Track usage, customer feedback, and performance of your charging stations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="how">
+    <div class="container">
+      <h2>How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="number">1</span>
+          <p>Sign up for an EVConnect Business account.</p>
+        </div>
+        <div class="step">
+          <span class="number">2</span>
+          <p>Add your charging station details and location.</p>
+        </div>
+        <div class="step">
+          <span class="number">3</span>
+          <p>Get discovered by EV drivers instantly!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <form class="contact-form" method="POST" action="{% url 'start_business' %}" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <input type="text" name="name" placeholder="Station Name" required>
+    <input type="text" name="address" placeholder="Address" required>
+    <input type="text" name="city" placeholder="City" required>
+    <input type="text" name="state" placeholder="State" required>
+    <input type="number" name="num_chargers" placeholder="Number of Chargers" required>
+    <input type="text" name="charger_types" placeholder="Charger Types (e.g., Type2, CCS)" required>
+
+    <input type="file" name="image" accept="image/*">
+
+    <input type="number" step="any" name="latitude" placeholder="Latitude" required>
+    <input type="number" step="any" name="longitude" placeholder="Longitude" required>
+
+    <button type="submit" class="btn-primary">Submit</button>
+  </form>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 EVConnect. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLinks = document.querySelectorAll('nav a[href^=\"#\"]');
+
+      // Smooth scroll
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = document.querySelector(link.getAttribute('href'));
+          if (target) {
+            window.scrollTo({
+              top: target.offsetTop - 60,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      const form = document.querySelector('.contact-form');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Thank you! Your station details have been submitted.');
+          form.reset();
+        });
+      }
+    });
+  </script>
+  {% endblock%}

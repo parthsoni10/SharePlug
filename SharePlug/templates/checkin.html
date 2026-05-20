@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .ci-page{max-width:600px;margin:40px auto;padding:0 20px;}
+  .ci-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);}
+  .ci-title{font-size:1.4rem;font-weight:700;margin-bottom:24px;text-align:center;}
+  .ci-station{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:24px;}
+  .ci-station h3{font-size:1.1rem;font-weight:600;margin-bottom:8px;color:var(--green);}
+  .ci-station p{font-size:0.88rem;color:var(--text-muted);margin:4px 0;}
+  .ci-success{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.25);border-radius:12px;padding:20px;text-align:center;color:var(--green);font-weight:600;}
+  .ci-textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-family:inherit;resize:none;margin-bottom:16px;}
+  .ci-textarea:focus{border-color:var(--green);outline:none;}
+  .ci-back{display:block;text-align:center;margin-top:20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
+  .ci-back:hover{color:var(--green);}
+</style>
+<div class="ci-page">
+  <div class="ci-card">
+    <div class="ci-title">🔌 Check In</div>
+    <div class="ci-station">
+      <h3>{{ station.name }}</h3>
+      <p><i class="fas fa-map-marker-alt" style="color:var(--green);width:16px;"></i> {{ station.address }}</p>
+      <p><i class="fas fa-city" style="color:var(--green);width:16px;"></i> {{ station.city }}, {{ station.state }}</p>
+      <p><i class="fas fa-charging-station" style="color:var(--green);width:16px;"></i> {{ station.num_chargers }} charger(s) · {{ station.charger_types }}</p>
+    </div>
+    {% if already_checked %}
+      <div class="ci-success"><i class="fas fa-check-circle"></i> You're already checked in at this station!</div>
+    {% else %}
+      <form method="POST">
+        {% csrf_token %}
+        <textarea class="ci-textarea" name="note" rows="3" placeholder="Add a note about your experience (optional)"></textarea>
+        <button type="submit" class="btn btn-primary btn-full btn-lg"><i class="fas fa-check"></i> Confirm Check-In</button>
+      </form>
+    {% endif %}
+    <a href="/" class="ci-back"><i class="fas fa-arrow-left"></i> Back to Map</a>
+  </div>
+</div>
+{% endblock %}

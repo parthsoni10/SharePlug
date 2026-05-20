@@ -1,0 +1,414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SharePlug – Find, book and review EV charging stations across India. Join India's fastest growing EV charging network.">
+  <title>{% block title %}{{ page|default:"SharePlug – EV Charging Network" }}{% endblock %}</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-light: #111f3a;
+      --navy-card: #162040;
+      --green: #00d4aa;
+      --green-dark: #00a882;
+      --green-glow: rgba(0, 212, 170, 0.15);
+      --orange: #ff6b35;
+      --text: #e8edf5;
+      --text-muted: #8899bb;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.05);
+      --glass-hover: rgba(255,255,255,0.09);
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --radius: 14px;
+      --nav-h: 64px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: rgba(10, 22, 40, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+      font-size: 1.4rem; font-weight: 800;
+      color: var(--green);
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .navbar-brand .bolt { font-size: 1.2rem; }
+    .navbar-links {
+      display: flex; align-items: center; gap: 4px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.88rem; font-weight: 500;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--text);
+      background: var(--glass-hover);
+    }
+    .nav-link i { font-size: 0.85rem; }
+
+    .nav-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.88rem; font-weight: 600;
+      transition: all 0.2s;
+      cursor: pointer; border: none; white-space: nowrap;
+    }
+    .nav-btn-primary {
+      background: var(--green);
+      color: var(--navy);
+    }
+    .nav-btn-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .nav-btn-ghost {
+      background: var(--glass);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .nav-btn-ghost:hover { background: var(--glass-hover); }
+
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      font-size: 0.85rem; color: var(--green);
+      font-weight: 600;
+    }
+    .nav-user-avatar {
+      width: 28px; height: 28px;
+      background: var(--green);
+      color: var(--navy);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+    }
+
+    /* Hamburger (mobile) */
+    .nav-hamburger {
+      display: none;
+      background: none; border: none;
+      color: var(--text); font-size: 1.3rem;
+      cursor: pointer; margin-left: auto; padding: 8px;
+    }
+
+    /* ── MESSAGES ── */
+    .messages-container {
+      position: fixed;
+      top: calc(var(--nav-h) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: min(460px, 90vw);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .message-toast {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-size: 0.9rem; font-weight: 500;
+      backdrop-filter: blur(20px);
+      animation: slideDown 0.3s ease;
+      cursor: pointer;
+    }
+    .message-toast.success {
+      background: rgba(0,212,170,0.15);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: #00d4aa;
+    }
+    .message-toast.error {
+      background: rgba(255,107,53,0.15);
+      border: 1px solid rgba(255,107,53,0.3);
+      color: #ff6b35;
+    }
+    .message-toast.info {
+      background: rgba(100,150,255,0.12);
+      border: 1px solid rgba(100,150,255,0.25);
+      color: #8ab4ff;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── PAGE WRAPPER ── */
+    .page-body {
+      padding-top: var(--nav-h);
+      min-height: 100vh;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-glass {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 0.9rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      border: none; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--green); color: var(--navy);
+    }
+    .btn-primary:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,212,170,0.3); }
+    .btn-secondary {
+      background: var(--glass); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--glass-hover); }
+    .btn-danger {
+      background: rgba(255,59,48,0.15); color: #ff3b30;
+      border: 1px solid rgba(255,59,48,0.25);
+    }
+    .btn-danger:hover { background: rgba(255,59,48,0.25); }
+    .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+    .btn-lg { padding: 14px 32px; font-size: 1rem; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block; margin-bottom: 6px;
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .form-control {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 0.95rem; font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+    .form-control::placeholder { color: var(--text-muted); }
+    select.form-control { cursor: pointer; }
+    select.form-control option { background: var(--navy-card); }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-green { background: rgba(0,212,170,0.15); color: var(--green); }
+    .badge-orange { background: rgba(255,107,53,0.15); color: var(--orange); }
+    .badge-blue { background: rgba(100,150,255,0.15); color: #8ab4ff; }
+    .badge-gray { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card .stat-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 8px;
+    }
+    .stat-card .stat-value {
+      font-size: 2rem; font-weight: 800; line-height: 1;
+      background: linear-gradient(135deg, var(--green), #00a8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-card .stat-label {
+      font-size: 0.82rem; color: var(--text-muted); font-weight: 500;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── TABLE ── */
+    .sp-table { width: 100%; border-collapse: collapse; }
+    .sp-table th {
+      padding: 12px 16px; text-align: left;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sp-table td {
+      padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.9rem;
+    }
+    .sp-table tr:hover td { background: var(--glass); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .navbar { padding: 0 16px; }
+      .nav-hamburger { display: block; }
+      .navbar-links {
+        display: none;
+        position: absolute;
+        top: var(--nav-h); left: 0; right: 0;
+        flex-direction: column;
+        background: rgba(10,22,40,0.97);
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        gap: 4px;
+      }
+      .navbar-links.open { display: flex; }
+      .nav-link, .nav-btn { width: 100%; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar" id="navbar">
+  <a class="navbar-brand" href="/">
+    <span class="bolt">⚡</span> SharePlug
+  </a>
+
+  <button class="nav-hamburger" id="nav-toggle" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="navbar-links" id="navbar-links">
+    <a class="nav-link" href="/"><i class="fas fa-map"></i> Map</a>
+
+    {% if user.is_authenticated %}
+      <a class="nav-link" href="/checkins/"><i class="fas fa-check-circle"></i> Check-Ins</a>
+      <a class="nav-link" href="/bookmarks/"><i class="fas fa-bookmark"></i> Saved</a>
+      <a class="nav-link" href="/book/my-bookings/"><i class="fas fa-calendar-check"></i> Bookings</a>
+      <a class="nav-link" href="/start-business/"><i class="fas fa-bolt"></i> Business</a>
+      {% if user.is_staff %}
+        <a class="nav-link" href="/admin-panel/" style="color:var(--orange)"><i class="fas fa-shield-alt"></i> Admin</a>
+      {% endif %}
+      <div class="nav-user">
+        <div class="nav-user-avatar">{{ request.user.first_name.0|upper|default:request.user.username.0|upper }}</div>
+        {{ request.user.first_name|default:request.user.username }}
+      </div>
+      <a class="nav-btn nav-btn-ghost" href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    {% else %}
+      <a class="nav-link" href="/start-business/"><i class="fas fa-bolt"></i> For Business</a>
+      <a class="nav-btn nav-btn-ghost" href="/login/"><i class="fas fa-sign-in-alt"></i> Login</a>
+      <a class="nav-btn nav-btn-primary" href="/register/"><i class="fas fa-user-plus"></i> Sign Up</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ── MESSAGES ── -->
+{% if messages %}
+<div class="messages-container" id="messages-container">
+  {% for message in messages %}
+    <div class="message-toast {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% else %}info{% endif %}"
+         onclick="this.remove()">
+      <i class="fas {% if 'error' in message.tags %}fa-exclamation-circle{% elif 'success' in message.tags %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+      <span>{{ message }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── PAGE CONTENT ── -->
+<div class="page-body">
+  {% block content %}{% endblock %}
+</div>
+
+<script>
+  // Mobile nav toggle
+  document.getElementById('nav-toggle').addEventListener('click', () => {
+    document.getElementById('navbar-links').classList.toggle('open');
+  });
+  // Auto-dismiss messages
+  setTimeout(() => {
+    const mc = document.getElementById('messages-container');
+    if (mc) mc.style.transition = 'opacity 0.5s';
+    if (mc) { mc.style.opacity = '0'; setTimeout(() => mc.remove(), 500); }
+  }, 4000);
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

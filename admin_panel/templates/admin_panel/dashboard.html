@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .adm-page{max-width:1100px;margin:40px auto;padding:0 20px;}
+  .adm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+  .adm-head h1{font-size:1.6rem;font-weight:800;}
+  .adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+  .adm-nav a{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;color:var(--text-muted);background:var(--glass);border:1px solid var(--border);transition:all 0.2s;}
+  .adm-nav a:hover,.adm-nav a.active{background:var(--green);color:var(--navy);border-color:var(--green);}
+  .adm-recent{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;}
+  .adm-recent-title{padding:16px 20px;font-weight:600;font-size:0.95rem;border-bottom:1px solid var(--border);}
+  .adm-recent-item{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.88rem;display:flex;justify-content:space-between;align-items:center;}
+</style>
+<div class="adm-page">
+  <div class="adm-head"><h1>🛡️ Admin Dashboard</h1></div>
+  <div class="adm-nav">
+    <a href="{% url 'admin_dashboard' %}" class="active"><i class="fas fa-home"></i> Overview</a>
+    <a href="{% url 'admin_registrations' %}"><i class="fas fa-clipboard-check"></i> Registrations {% if pending_regs %}<span class="badge badge-orange" style="margin-left:4px;">{{ pending_regs }}</span>{% endif %}</a>
+    <a href="{% url 'admin_stations' %}"><i class="fas fa-charging-station"></i> Stations</a>
+    <a href="{% url 'admin_users' %}"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_bookings' %}"><i class="fas fa-calendar"></i> Bookings</a>
+    <a href="{% url 'admin_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-icon" style="background:var(--green-glow);color:var(--green);"><i class="fas fa-charging-station"></i></div><div class="stat-value">{{ total_stations }}</div><div class="stat-label">Active Stations</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(255,107,53,0.15);color:var(--orange);"><i class="fas fa-clock"></i></div><div class="stat-value">{{ pending_regs }}</div><div class="stat-label">Pending Reviews</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(100,150,255,0.15);color:#8ab4ff;"><i class="fas fa-users"></i></div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Users</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(255,200,0,0.15);color:#ffc800;"><i class="fas fa-calendar-check"></i></div><div class="stat-value">{{ total_bookings }}</div><div class="stat-label">Total Bookings</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(0,212,170,0.15);color:var(--green);"><i class="fas fa-check-circle"></i></div><div class="stat-value">{{ total_checkins }}</div><div class="stat-label">Check-Ins</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="adm-recent">
+      <div class="adm-recent-title">Recent Registrations</div>
+      {% for r in recent_regs %}
+      <div class="adm-recent-item"><span>{{ r.station_name }} — {{ r.city }}</span><span class="badge {% if r.status == 'pending' %}badge-orange{% elif r.status == 'approved' %}badge-green{% else %}badge-gray{% endif %}">{{ r.get_status_display }}</span></div>
+      {% empty %}<div class="adm-recent-item" style="color:var(--text-muted);">No registrations yet</div>{% endfor %}
+    </div>
+    <div class="adm-recent">
+      <div class="adm-recent-title">Recent Users</div>
+      {% for u in recent_users %}
+      <div class="adm-recent-item"><span>{{ u.first_name }} {{ u.last_name }} ({{ u.username }})</span><span style="color:var(--text-muted);font-size:0.8rem;">{{ u.date_joined|date:"d M Y" }}</span></div>
+      {% empty %}<div class="adm-recent-item" style="color:var(--text-muted);">No users yet</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
