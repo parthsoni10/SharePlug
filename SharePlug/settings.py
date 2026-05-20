@@ -61,7 +61,7 @@ WSGI_APPLICATION = "SharePlug.wsgi.application"
 if config('DATABASE_URL', default=None):
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.config(default=config('DATABASE_URL'), conn_max_age=600)
+        'default': dj_database_url.config(default=config('postgresql://shareplug_user:tx30AbmSh4m65Oqex6uQ0dQVZ2ZPRnKH@dpg-d86vmn8g4nts73be7dp0-a/shareplug'), conn_max_age=600,ssl_require=True)
     }
 else:
     DATABASES = {
