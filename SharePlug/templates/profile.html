@@ -16,6 +16,9 @@
   .profile-stat { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; background: rgba(255,255,255,.02); }
   .profile-stat strong { display: block; font-size: 1.4rem; margin-bottom: 6px; }
   .profile-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(56,189,248,.12); color: #38bdf8; border-radius: 999px; padding: 8px 14px; font-size: 0.95rem; }
+  @media (max-width: 900px) {
+    .profile-grid { grid-template-columns: 1fr !important; }
+  }
 </style>
 
 <div class="profile-page">

@@ -4,11 +4,15 @@
   .mr-page{max-width:800px;margin:40px auto;padding:0 20px;}
   .mr-title{font-size:1.5rem;font-weight:700;margin-bottom:24px;}
   .mr-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
-  .mr-head{display:flex;align-items:center;justify-content:space-between;}
+  .mr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
   .mr-name{font-weight:600;font-size:1.05rem;}
   .mr-city{color:var(--text-muted);font-size:0.85rem;margin-top:4px;}
   .mr-chargers{margin-top:10px;font-size:0.85rem;color:var(--text-muted);}
   .mr-notes{background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.2);border-radius:8px;padding:10px;margin-top:10px;font-size:0.85rem;color:var(--orange);}
+  @media (max-width: 760px) {
+    .mr-head{flex-direction:column;align-items:flex-start;}
+    .mr-card{padding:18px;}
+  }
 </style>
 <div class="mr-page">
   <div class="mr-title">📋 My Station Registrations</div>

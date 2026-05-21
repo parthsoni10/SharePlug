@@ -11,6 +11,12 @@
   .bd-row:last-child{border-bottom:none;}
   .bd-lbl{color:var(--text-muted);font-size:0.9rem;}
   .bd-val{font-weight:600;font-size:0.95rem;}
+  @media (max-width: 760px) {
+    .bd-card{padding:24px;}
+    .bd-row{flex-direction:column;align-items:flex-start;gap:6px;}
+    .bd-row span{width:100%;}
+    .bd-info{padding:18px;}
+  }
 </style>
 <div class="bd-page">
   <div class="bd-card">

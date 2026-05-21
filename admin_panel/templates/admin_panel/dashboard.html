@@ -10,6 +10,11 @@
   .adm-recent{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;}
   .adm-recent-title{padding:16px 20px;font-weight:600;font-size:0.95rem;border-bottom:1px solid var(--border);}
   .adm-recent-item{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.88rem;display:flex;justify-content:space-between;align-items:center;}
+  @media (max-width: 900px) {
+    .adm-head { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .adm-recent-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .adm-page > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  }
 </style>
 <div class="adm-page">
   <div class="adm-head"><h1>🛡️ Admin Dashboard</h1></div>

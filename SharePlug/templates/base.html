@@ -339,6 +339,43 @@
       .navbar-links.open { display: flex; }
       .nav-link, .nav-btn { width: 100%; }
     }
+
+    img, picture, video, iframe, embed, svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive table {
+      min-width: 600px;
+    }
+
+    @media (max-width: 900px) {
+      .page-body { padding-bottom: 40px; }
+      .form-row { grid-template-columns: 1fr !important; }
+      .charger-row { grid-template-columns: 1fr !important; }
+      .profile-grid { grid-template-columns: 1fr !important; }
+      .bk-station, .bk-card, .bk-actions, .adm-head, .rd-head, .rd-actions, .mb-card, .mb-actions {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      .bk-actions, .mb-actions, .rd-actions {
+        width: 100% !important;
+      }
+      .bk-actions a, .mb-actions a {
+        width: 100% !important;
+        justify-content: center;
+      }
+      .adm-head { justify-content: flex-start; gap: 16px; }
+      .sb-actions { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important; }
+      .rd-grid, .aa-grid, .adm-page > div[style*="grid-template-columns:1fr 1fr"], .bd-stat {
+        grid-template-columns: 1fr !important;
+      }
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>

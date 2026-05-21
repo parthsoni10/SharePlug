@@ -16,6 +16,10 @@
   .charger-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;align-items:end;}
   .charger-row .form-group{margin-bottom:0;}
   .sr-section{margin:28px 0 12px;font-size:0.85rem;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;}
+  @media (max-width: 760px) {
+    .form-row, .charger-row { grid-template-columns: 1fr !important; }
+    .sr-card { padding: 24px; }
+  }
 </style>
 {% endblock %}
 
