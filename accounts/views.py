@@ -3,6 +3,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from Map.models import EVStation, StationRegistration, Booking, CheckIn, Bookmark
+
 
 def login_page(request):
     if request.user.is_authenticated:
@@ -65,3 +68,20 @@ def logout_page(request):
     logout(request)
     messages.success(request, "Logged out successfully.")
     return redirect('/login/')
+
+@login_required
+def profile_page(request):
+    user = request.user
+    business_profile = getattr(user, 'business_profile', None)
+    stats = {
+        'checkins': CheckIn.objects.filter(user=user).count(),
+        'bookmarks': Bookmark.objects.filter(user=user).count(),
+        'bookings': Booking.objects.filter(user=user).count(),
+        'registrations': StationRegistration.objects.filter(owner=user).count(),
+        'stations': EVStation.objects.filter(owner=user).count(),
+    }
+    return render(request, 'profile.html', {
+        'page': 'My Profile – SharePlug',
+        'business_profile': business_profile,
+        'stats': stats,
+    })

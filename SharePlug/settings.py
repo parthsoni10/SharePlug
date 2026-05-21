@@ -102,6 +102,7 @@ USE_TZ = True
 mimetypes.add_type("application/javascript", ".js", strict=True)
 
 # Static files
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] if os.path.exists(os.path.join(BASE_DIR, 'static')) else []
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [

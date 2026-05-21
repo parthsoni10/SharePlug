@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .profile-page { max-width: 1000px; margin: 32px auto 64px; padding: 0 20px; }
+  .profile-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; margin-bottom: 32px; }
+  .profile-card { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); }
+  .profile-title { margin: 0 0 10px; font-size: 2rem; letter-spacing: -0.04em; }
+  .profile-subtitle { margin: 0; color: var(--text-muted); }
+  .profile-grid { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: 24px; }
+  .profile-section { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+  .profile-section h2 { margin-top: 0; font-size: 1.2rem; }
+  .profile-row { display: grid; grid-template-columns: 160px 1fr; gap: 10px 20px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-row strong { color: var(--text-muted); font-weight: 600; }
+  .profile-stats { display: grid; grid-template-columns: repeat(2, minmax(140px, 1fr)); gap: 16px; margin-top: 18px; }
+  .profile-stat { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; background: rgba(255,255,255,.02); }
+  .profile-stat strong { display: block; font-size: 1.4rem; margin-bottom: 6px; }
+  .profile-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(56,189,248,.12); color: #38bdf8; border-radius: 999px; padding: 8px 14px; font-size: 0.95rem; }
+</style>
+
+<div class="profile-page">
+  <div class="profile-header">
+    <div>
+      <h1 class="profile-title">My Profile</h1>
+      <p class="profile-subtitle">All of your account details are shown here. Update your account or business settings from the respective pages.</p>
+    </div>
+    <div class="profile-badge">{{ user.username|upper }}</div>
+  </div>
+
+  <div class="profile-grid">
+    <section class="profile-section profile-card">
+      <h2>Account Information</h2>
+      <div class="profile-row">
+        <strong>Full name</strong>
+        <span>{{ user.first_name|default:"" }} {{ user.last_name|default:"" }}{% if not user.first_name and not user.last_name %}—{% endif %}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Username</strong>
+        <span>{{ user.username }}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Email address</strong>
+        <span>{{ user.email|default:"Not provided" }}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Member since</strong>
+        <span>{{ user.date_joined|date:"F j, Y" }}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Status</strong>
+        <span>{% if user.is_staff %}Staff{% else %}Member{% endif %}</span>
+      </div>
+      <div class="profile-row">
+        <strong>Active</strong>
+        <span>{% if user.is_active %}Yes{% else %}No{% endif %}</span>
+      </div>
+    </section>
+
+    <section class="profile-section profile-card">
+      <h2>Usage Summary</h2>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <strong>{{ stats.checkins }}</strong>
+          Check-ins
+        </div>
+        <div class="profile-stat">
+          <strong>{{ stats.bookmarks }}</strong>
+          Saved stations
+        </div>
+        <div class="profile-stat">
+          <strong>{{ stats.bookings }}</strong>
+          Bookings
+        </div>
+        <div class="profile-stat">
+          <strong>{{ stats.registrations }}</strong>
+          Registrations
+        </div>
+        <div class="profile-stat">
+          <strong>{{ stats.stations }}</strong>
+          Owned stations
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-section profile-card">
+      <h2>Business Profile</h2>
+      {% if business_profile %}
+        <div class="profile-row">
+          <strong>Company</strong>
+          <span>{{ business_profile.business_name }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>Type</strong>
+          <span>{{ business_profile.get_business_type_display }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>Phone</strong>
+          <span>{{ business_profile.phone }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>Contact email</strong>
+          <span>{{ business_profile.email }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>GST number</strong>
+          <span>{{ business_profile.gst_number|default:"-" }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>PAN number</strong>
+          <span>{{ business_profile.pan_number|default:"-" }}</span>
+        </div>
+        <div class="profile-row">
+          <strong>Verified</strong>
+          <span>{% if business_profile.is_verified %}Yes{% else %}No{% endif %}</span>
+        </div>
+      {% else %}
+        <p style="color:var(--text-muted); margin:0;">No business profile set up yet. Visit the business section to create one.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

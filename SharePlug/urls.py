@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import (
-    login_page, logout_page, register_page
+    login_page, logout_page, register_page, profile_page
 )
 from stations.views import (
     home, get_nearest_station, location_detail,
@@ -21,6 +21,7 @@ urlpatterns = [
     path('login/', login_page, name='login'),
     path('logout/', logout_page, name='logout'),
     path('register/', register_page, name='register'),
+    path('profile/', profile_page, name='profile'),
 
     # Map API
     path("get-nearest-station/", get_nearest_station, name='get_nearest_station'),
