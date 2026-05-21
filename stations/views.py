@@ -1,4 +1,5 @@
 import json
+import random
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -76,6 +77,9 @@ def location_detail(request, station_id):
                 image_url = station.image.url
             except Exception:
                 image_url = ''
+
+        if not image_url:
+            image_url = f'/static/images/ev-placeholders/ev-{random.randint(1,50):02}.svg'
 
         avg_rating = station.average_rating()
         reviews = list(station.reviews.select_related('user').order_by('-created_at')[:5].values(
