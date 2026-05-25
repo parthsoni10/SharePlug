@@ -3,7 +3,7 @@
 <style>
   .list-page{max-width:800px;margin:40px auto;padding:0 20px;}
   .list-title{font-size:1.5rem;font-weight:700;margin-bottom:24px;text-align:center;}
-  .list-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:transform 0.2s;}
+  .list-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:transform 0.2s,background-color 0.3s,border-color 0.3s;}
   .list-card:hover{transform:translateY(-2px);}
   .list-card h3{font-size:1.05rem;font-weight:600;color:var(--green);margin-bottom:6px;}
   .list-card p{font-size:0.85rem;color:var(--text-muted);margin:3px 0;}
@@ -11,6 +11,7 @@
   .list-empty{text-align:center;color:var(--text-muted);font-size:1rem;padding:60px 0;}
   .list-back{display:block;text-align:center;margin-top:24px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
   .list-back:hover{color:var(--green);}
+  @media(max-width:480px){.list-title{font-size:1.3rem;}.list-card{padding:16px;}.list-card h3{font-size:0.95rem;}}
 </style>
 <div class="list-page">
   <div class="list-title">📍 My Check-In History</div>

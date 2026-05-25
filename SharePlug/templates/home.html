@@ -8,15 +8,34 @@
   #map { height: calc(100vh - var(--nav-h)); width: 100%; }
   /* Search */
   .map-search { position:absolute; top:80px; left:50%; transform:translateX(-50%); z-index:2000; width:min(440px,90vw); }
-  .map-search input { width:100%; padding:14px 48px 14px 18px; border-radius:12px; border:1px solid var(--border); background:rgba(10,22,40,0.92); backdrop-filter:blur(16px); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; }
+  .map-search input { width:100%; padding:14px 48px 14px 18px; border-radius:12px; border:1px solid var(--border); background:var(--navbar-bg); backdrop-filter:blur(16px); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; transition: background 0.3s, border-color 0.3s, color 0.3s; }
   .map-search input:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-glow); }
   .map-search input::placeholder { color:var(--text-muted); }
-  .map-search-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); background:var(--green); border:none; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--navy); }
+  .map-search-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); background:var(--green); border:none; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; }
+  [data-theme="dark"] .map-search-btn { color: #0a1628; }
+  /* Search Results Dropdown */
+  .search-results { position:absolute; top:100%; left:0; right:0; margin-top:6px; background:var(--navy-card); border:1px solid var(--border); border-radius:12px; max-height:280px; overflow-y:auto; z-index:2001; display:none; box-shadow:var(--shadow); }
+  .search-results.active { display:block; animation: fadeSlideDown 0.2s ease; }
+  .search-result-item { padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); transition: background 0.15s; font-size:0.9rem; }
+  .search-result-item:last-child { border-bottom:none; }
+  .search-result-item:hover { background:var(--glass-hover); }
+  .search-result-item i { color:var(--green); font-size:1rem; flex-shrink:0; }
+  .search-result-name { font-weight:600; }
+  .search-result-loc { font-size:0.8rem; color:var(--text-muted); }
+  .search-no-results { padding:16px; text-align:center; color:var(--text-muted); font-size:0.88rem; }
+  @keyframes fadeSlideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
   .map-controls { position:absolute; top:80px; right:16px; z-index:2000; display:flex; flex-direction:column; gap:8px; }
-  .map-ctrl-btn { width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:rgba(10,22,40,0.88); backdrop-filter:blur(12px); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; transition:all 0.2s; }
-  .map-ctrl-btn:hover { background:var(--green); color:var(--navy); }
+  .map-ctrl-btn { width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:var(--navbar-bg); backdrop-filter:blur(12px); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; transition:all 0.2s; }
+  .map-ctrl-btn:hover { background:var(--green); color:#fff; }
+  [data-theme="dark"] .map-ctrl-btn:hover { color: #0a1628; }
+  .map-ctrl-btn.loading { pointer-events:none; }
+  .map-ctrl-btn.loading i { display:none; }
+  .map-ctrl-btn .sp-spinner { display:none; }
+  .map-ctrl-btn.loading .sp-spinner { display:inline-block; }
+
   /* Sidebar */
-  #sidebar { position:fixed; top:var(--nav-h); left:0; width:420px; height:calc(100vh - var(--nav-h)); background:var(--navy-light); border-right:1px solid var(--border); z-index:3000; transform:translateX(-100%); transition:transform 0.35s cubic-bezier(.4,0,.2,1); overflow-y:auto; }
+  #sidebar { position:fixed; top:var(--nav-h); left:0; width:420px; height:calc(100vh - var(--nav-h)); background:var(--navy-light); border-right:1px solid var(--border); z-index:3000; transform:translateX(-100%); transition:transform 0.35s cubic-bezier(.4,0,.2,1), background-color 0.3s; overflow-y:auto; }
   #sidebar.open { transform:translateX(0); }
   .sb-close { position:absolute; top:14px; right:14px; background:rgba(0,0,0,0.4); border:none; color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; z-index:10; }
   .sb-img { width:100%; height:200px; object-fit:cover; background:var(--navy-card); }
@@ -31,26 +50,37 @@
   .sb-act i { font-size:1.1rem; }
   .sb-section { margin-bottom:16px; }
   .sb-section-title { font-size:0.78rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-  .sb-info-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.88rem; }
+  .sb-info-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--table-row-hover); font-size:0.88rem; }
   .sb-info-row i { width:18px; text-align:center; color:var(--green); margin-top:2px; }
   .sb-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .sb-gallery img { width:100%; height:70px; object-fit:cover; border-radius:6px; cursor:pointer; }
-  .sb-book-btn { width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--green),#00a8ff); color:var(--navy); font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.2s; margin-top:16px; }
+  .sb-book-btn { width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--green),#00a8ff); color:#fff; font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.2s; margin-top:16px; }
+  [data-theme="dark"] .sb-book-btn { color: #0a1628; }
   .sb-book-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,170,0.3); }
   /* Review form */
   .review-stars { display:flex; gap:4px; margin-bottom:8px; }
   .review-stars i { cursor:pointer; font-size:1.3rem; color:var(--text-muted); transition:color 0.15s; }
   .review-stars i.active { color:#ffc107; }
-  .review-input { width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-family:inherit; resize:none; }
+  .review-input { width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-family:inherit; resize:none; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+
   /* Responsive */
   @media(max-width:768px) {
     #sidebar { width:100%; }
     .map-search { top:74px; width:calc(100vw - 70px); left:8px; transform:none; }
     .map-controls { top:74px; right:8px; }
+    .sb-actions { grid-template-columns: repeat(2, 1fr); }
   }
+  @media(max-width:480px) {
+    .map-search { width:calc(100vw - 60px); }
+    .map-search input { padding:12px 44px 12px 14px; font-size:0.88rem; }
+    .map-ctrl-btn { width:38px; height:38px; font-size:1rem; }
+    .sb-name { font-size:1.1rem; }
+    .sb-img { height:160px; }
+  }
+
   /* Custom cluster */
   .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:rgba(0,212,170,0.25); }
-  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background:var(--green); color:var(--navy); font-weight:700; font-size:0.8rem; }
+  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background:var(--green); color:#0a1628; font-weight:700; font-size:0.8rem; }
   .leaflet-control-zoom { display:none; }
 </style>
 {% endblock %}
@@ -60,12 +90,13 @@
 <div class="map-search">
   <input type="text" id="search-input" placeholder="Search city, address, or station name..." autocomplete="off">
   <button class="map-search-btn" id="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+  <div class="search-results" id="search-results"></div>
 </div>
 
 <!-- Map Controls -->
 <div class="map-controls">
-  <button class="map-ctrl-btn" id="locate-btn" title="My Location"><i class="fas fa-crosshairs"></i></button>
-  <button class="map-ctrl-btn" id="nearest-btn" title="Find Nearest"><i class="fas fa-bolt"></i></button>
+  <button class="map-ctrl-btn" id="locate-btn" title="My Location"><i class="fas fa-crosshairs"></i><span class="sp-spinner"></span></button>
+  <button class="map-ctrl-btn" id="nearest-btn" title="Find Nearest"><i class="fas fa-bolt"></i><span class="sp-spinner"></span></button>
   <button class="map-ctrl-btn" id="zoom-in" title="Zoom In"><i class="fas fa-plus"></i></button>
   <button class="map-ctrl-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-minus"></i></button>
 </div>
@@ -131,17 +162,36 @@
   let currentStationId = null, selectedLat = null, selectedLng = null;
   let userMarker = null, nearestMarker = null, nearestRoute = null;
   let reviewRating = 0;
+  let searchTimeout = null;
 
   // ── MAP ──
   const map = L.map('map', {zoomControl:false}).setView([22.5,78.9],5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+
+  // Tile layers for dark and light modes
+  const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
     attribution:'© OpenStreetMap © CARTO', maxZoom:19
-  }).addTo(map);
+  });
+  const lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO', maxZoom:19
+  });
+
+  // Apply correct tile layer based on current theme
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  let activeTileLayer = currentTheme === 'light' ? lightTiles : darkTiles;
+  activeTileLayer.addTo(map);
+
+  // Listen for theme changes
+  window.addEventListener('themechange', function(e) {
+    const theme = e.detail.theme;
+    map.removeLayer(activeTileLayer);
+    activeTileLayer = theme === 'light' ? lightTiles : darkTiles;
+    activeTileLayer.addTo(map);
+  });
 
   const markers = L.markerClusterGroup({maxClusterRadius:50,spiderfyOnMaxZoom:true,showCoverageOnHover:false});
   map.addLayer(markers);
 
-  const greenIcon = L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:var(--green,#00d4aa);border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#0a1628;font-size:12px;"></i></div>',iconSize:[28,28],iconAnchor:[14,14]});
+  const greenIcon = L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:#00d4aa;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#0a1628;font-size:12px;"></i></div>',iconSize:[28,28],iconAnchor:[14,14]});
   const redIcon = L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:#ff3b30;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#fff;font-size:12px;"></i></div>',iconSize:[28,28],iconAnchor:[14,14]});
 
   const stationIds = new Set();
@@ -206,45 +256,225 @@
   document.getElementById('sb-close').onclick = ()=>{document.getElementById('sidebar').classList.remove('open');history.pushState({},'','/');};
   map.on('click',()=>{document.getElementById('sidebar').classList.remove('open');history.pushState({},'','/');});
 
-  // ── SEARCH ──
-  function doSearch(){
-    const q = document.getElementById('search-input').value.trim();
-    if(!q) return;
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&limit=1`)
-    .then(r=>r.json()).then(data=>{
-      if(!data.length){alert('Location not found');return;}
-      map.flyTo([parseFloat(data[0].lat),parseFloat(data[0].lon)],13,{duration:1.5});
-    }).catch(()=>alert('Search failed'));
+  // ── GPS HELPER ──
+  function showGpsToast(title, message) {
+    // Remove existing toast
+    const existing = document.querySelector('.gps-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'gps-toast';
+    toast.innerHTML = `
+      <i class="fas fa-location-crosshairs"></i>
+      <div class="gps-toast-text">
+        <strong>${title}</strong>
+        ${message}
+      </div>
+      <button class="gps-toast-close" aria-label="Close"><i class="fas fa-times"></i></button>
+    `;
+    document.body.appendChild(toast);
+    toast.querySelector('.gps-toast-close').onclick = () => toast.remove();
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
   }
+
+  function requestLocation(onSuccess, purpose) {
+    if (!navigator.geolocation) {
+      showGpsToast('GPS Not Available', 'Your browser does not support geolocation. Please use a modern browser.');
+      return;
+    }
+
+    // Check permission state first (if available)
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+        if (result.state === 'denied') {
+          showGpsToast('Location Access Denied', 'Please enable location access in your browser/device settings, then try again.');
+          return;
+        }
+        doGeolocate(onSuccess, purpose);
+      }).catch(function() {
+        // permissions API not supported, try directly
+        doGeolocate(onSuccess, purpose);
+      });
+    } else {
+      doGeolocate(onSuccess, purpose);
+    }
+  }
+
+  function doGeolocate(onSuccess, purpose) {
+    // Show loading on relevant button
+    const btnId = purpose === 'nearest' ? 'nearest-btn' : 'locate-btn';
+    const btn = document.getElementById(btnId);
+    btn.classList.add('loading');
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        btn.classList.remove('loading');
+        onSuccess(pos);
+      },
+      function(err) {
+        btn.classList.remove('loading');
+        let msg = 'Could not determine your location. ';
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            msg = 'Location permission was denied. Please enable GPS/location in your device settings and allow this site to access your location.';
+            break;
+          case err.POSITION_UNAVAILABLE:
+            msg = 'Your location could not be determined. Please make sure GPS is turned on in your device settings.';
+            break;
+          case err.TIMEOUT:
+            msg = 'Location request timed out. Please check that GPS is enabled and try again.';
+            break;
+        }
+        showGpsToast('Location Error', msg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
+      }
+    );
+  }
+
+  // ── SEARCH (two-pass: station names first, then geocode) ──
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  function doSearch(){
+    const q = searchInput.value.trim();
+    if(!q) return;
+    hideSearchResults();
+
+    // First: search station names via API
+    fetch(`/api/stations/search/?q=${encodeURIComponent(q)}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.stations && data.stations.length > 0) {
+        // Found stations — fly to first one and add markers
+        const first = data.stations[0];
+        data.stations.forEach(s => {
+          if (!stationIds.has(s.id)) {
+            stationIds.add(s.id);
+            const icon = s.availability_status ? greenIcon : redIcon;
+            const m = L.marker([s.latitude, s.longitude], {icon}).on('click', () => openStation(s.id));
+            m.bindTooltip(s.name, {direction:'top', offset:[0,-14]});
+            markers.addLayer(m);
+          }
+        });
+        if (data.stations.length === 1) {
+          map.flyTo([first.latitude, first.longitude], 15, {duration: 1.2});
+          openStation(first.id);
+        } else {
+          const group = L.featureGroup(data.stations.map(s => L.marker([s.latitude, s.longitude])));
+          map.fitBounds(group.getBounds(), {padding: [60, 60], maxZoom: 14});
+        }
+      } else {
+        // Fallback: geocode with Nominatim
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&limit=1`)
+        .then(r=>r.json()).then(geoData=>{
+          if(!geoData.length){
+            showGpsToast('Not Found', `No stations or locations found for "${q}". Try a different search term.`);
+            return;
+          }
+          map.flyTo([parseFloat(geoData[0].lat),parseFloat(geoData[0].lon)],13,{duration:1.5});
+        }).catch(()=>showGpsToast('Search Error', 'Search failed. Please check your connection and try again.'));
+      }
+    })
+    .catch(()=>{
+      // If station API fails, fallback to geocoding
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&limit=1`)
+      .then(r=>r.json()).then(geoData=>{
+        if(!geoData.length){showGpsToast('Not Found', `No results found for "${q}".`);return;}
+        map.flyTo([parseFloat(geoData[0].lat),parseFloat(geoData[0].lon)],13,{duration:1.5});
+      }).catch(()=>showGpsToast('Search Error', 'Search failed.'));
+    });
+  }
+
+  // Live search suggestions
+  searchInput.addEventListener('input', function() {
+    const q = this.value.trim();
+    if (searchTimeout) clearTimeout(searchTimeout);
+    if (q.length < 2) { hideSearchResults(); return; }
+    searchTimeout = setTimeout(() => {
+      fetch(`/api/stations/search/?q=${encodeURIComponent(q)}`)
+      .then(r=>r.json())
+      .then(data => {
+        if (data.stations && data.stations.length > 0) {
+          showSearchResults(data.stations);
+        } else {
+          searchResults.innerHTML = '<div class="search-no-results">No stations found. Press Enter to search locations.</div>';
+          searchResults.classList.add('active');
+        }
+      }).catch(() => hideSearchResults());
+    }, 300);
+  });
+
+  function showSearchResults(stations) {
+    searchResults.innerHTML = '';
+    stations.slice(0, 8).forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'search-result-item';
+      item.innerHTML = `<i class="fas fa-charging-station"></i><div><div class="search-result-name">${s.name}</div><div class="search-result-loc">${s.city}, ${s.state}</div></div>`;
+      item.addEventListener('click', () => {
+        searchInput.value = s.name;
+        hideSearchResults();
+        if (!stationIds.has(s.id)) {
+          stationIds.add(s.id);
+          const icon = s.availability_status ? greenIcon : redIcon;
+          const m = L.marker([s.latitude, s.longitude], {icon}).on('click', () => openStation(s.id));
+          m.bindTooltip(s.name, {direction:'top', offset:[0,-14]});
+          markers.addLayer(m);
+        }
+        map.flyTo([s.latitude, s.longitude], 15, {duration: 1.2});
+        openStation(s.id);
+      });
+      searchResults.appendChild(item);
+    });
+    searchResults.classList.add('active');
+  }
+
+  function hideSearchResults() {
+    searchResults.classList.remove('active');
+  }
+
+  // Close search results on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.map-search')) hideSearchResults();
+  });
+
   document.getElementById('search-btn').onclick = doSearch;
-  document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+  searchInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter') { hideSearchResults(); doSearch(); }
+    if(e.key==='Escape') hideSearchResults();
+  });
 
   // ── MAP CONTROLS ──
   document.getElementById('zoom-in').onclick = ()=>map.zoomIn();
   document.getElementById('zoom-out').onclick = ()=>map.zoomOut();
+
   document.getElementById('locate-btn').onclick = ()=>{
-    navigator.geolocation.getCurrentPosition(p=>{
+    requestLocation(function(p) {
       const ll=[p.coords.latitude,p.coords.longitude];
       if(userMarker) map.removeLayer(userMarker);
       userMarker = L.marker(ll,{icon:L.divIcon({className:'',html:'<div style="width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(59,130,246,0.5);"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map).bindPopup('You are here').openPopup();
       map.flyTo(ll,14,{duration:1});
-    },()=>alert('Enable location access'));
+    }, 'locate');
   };
+
   document.getElementById('nearest-btn').onclick = ()=>{
-    navigator.geolocation.getCurrentPosition(p=>{
+    requestLocation(function(p) {
       const lat=p.coords.latitude,lng=p.coords.longitude;
       if(userMarker) map.removeLayer(userMarker);
       if(nearestMarker) map.removeLayer(nearestMarker);
       if(nearestRoute) map.removeLayer(nearestRoute);
       userMarker = L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map);
       fetch(`/get-nearest-station/?latitude=${lat}&longitude=${lng}`).then(r=>r.json()).then(d=>{
-        if(d.error){alert(d.error);return;}
+        if(d.error){showGpsToast('No Stations', d.error);return;}
         nearestMarker = L.marker(d.coordinates,{icon:greenIcon}).addTo(map).bindPopup(`<b>${d.name}</b><br>${d.distance} km away`).openPopup();
         nearestRoute = L.polyline([[lat,lng],d.coordinates],{color:'#00d4aa',weight:3,dashArray:'8,8'}).addTo(map);
         map.fitBounds(L.featureGroup([userMarker,nearestMarker]).getBounds(),{padding:[80,80]});
         openStation(d.id);
       });
-    },()=>alert('Enable GPS'));
+    }, 'nearest');
   };
 
   // ── ACTIONS ──
@@ -258,15 +488,15 @@
   };
   document.getElementById('act-directions').onclick = ()=>{
     if(!selectedLat) return;
-    navigator.geolocation.getCurrentPosition(p=>{
+    requestLocation(function(p) {
       window.open(`https://www.google.com/maps/dir/?api=1&origin=${p.coords.latitude},${p.coords.longitude}&destination=${selectedLat},${selectedLng}&travelmode=driving`,'_blank');
-    },()=>alert('Enable location'));
+    }, 'locate');
   };
   document.getElementById('photo-input').addEventListener('change',function(){
     if(!this.files[0]||!currentStationId) return;
     const fd=new FormData(); fd.append('image',this.files[0]);
     fetch(`/station/${currentStationId}/upload-image/`,{method:'POST',headers:{'X-CSRFToken':csrfToken},body:fd})
-    .then(r=>r.json()).then(d=>{if(d.success){alert('Photo uploaded!');loadGallery(currentStationId);}else alert(d.error||'Upload failed');});
+    .then(r=>r.json()).then(d=>{if(d.success){showGpsToast('Success', 'Photo uploaded successfully!');loadGallery(currentStationId);}else showGpsToast('Upload Error', d.error||'Upload failed');});
   });
 
   function loadGallery(id){
@@ -293,11 +523,11 @@
     document.querySelectorAll('#review-stars i').forEach((s,i)=>{s.classList.toggle('active',i<reviewRating);});
   });
   document.getElementById('submit-review').onclick = ()=>{
-    if(!currentStationId||!reviewRating){alert('Select a rating');return;}
+    if(!currentStationId||!reviewRating){showGpsToast('Review', 'Please select a star rating first.');return;}
     const fd=new FormData();fd.append('rating',reviewRating);fd.append('comment',document.getElementById('review-comment').value);
     fetch(`/station/${currentStationId}/review/`,{method:'POST',headers:{'X-CSRFToken':csrfToken},body:fd})
     .then(r=>r.json()).then(d=>{
-      if(d.success){alert('Review submitted!');if(d.avg_rating){document.getElementById('sb-rating').style.display='flex';document.getElementById('sb-stars').innerHTML='★'.repeat(Math.round(d.avg_rating))+'☆'.repeat(5-Math.round(d.avg_rating));document.getElementById('sb-rating-val').textContent=d.avg_rating+'/5';}}
+      if(d.success){showGpsToast('Thank You!', 'Your review has been submitted.');if(d.avg_rating){document.getElementById('sb-rating').style.display='flex';document.getElementById('sb-stars').innerHTML='★'.repeat(Math.round(d.avg_rating))+'☆'.repeat(5-Math.round(d.avg_rating));document.getElementById('sb-rating-val').textContent=d.avg_rating+'/5';}}
     });
   };
 

@@ -40,6 +40,27 @@ def stations_in_bounds(request):
 
     return JsonResponse({'stations': list(stations)})
 
+def search_stations(request):
+    """
+    Search stations by name (case-insensitive).
+    Query: ?q=<search term>
+    """
+    query = request.GET.get('q', '').strip()
+    if not query or len(query) < 2:
+        return JsonResponse({'stations': []})
+
+    from django.db.models import Q
+    stations = EVStation.objects.filter(
+        Q(is_active=True),
+        Q(name__icontains=query) | Q(city__icontains=query) | Q(address__icontains=query)
+    ).values(
+        'id', 'name', 'latitude', 'longitude',
+        'city', 'state', 'address',
+        'availability_status', 'charger_types', 'num_chargers'
+    )[:20]
+
+    return JsonResponse({'stations': list(stations)})
+
 def get_nearest_station(request):
     try:
         latitude = float(request.GET.get('latitude'))

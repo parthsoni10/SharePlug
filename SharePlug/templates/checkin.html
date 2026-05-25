@@ -2,16 +2,17 @@
 {% block content %}
 <style>
   .ci-page{max-width:600px;margin:40px auto;padding:0 20px;}
-  .ci-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);}
+  .ci-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);transition:background-color 0.3s,border-color 0.3s;}
   .ci-title{font-size:1.4rem;font-weight:700;margin-bottom:24px;text-align:center;}
-  .ci-station{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:24px;}
+  .ci-station{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:24px;transition:background-color 0.3s;}
   .ci-station h3{font-size:1.1rem;font-weight:600;margin-bottom:8px;color:var(--green);}
   .ci-station p{font-size:0.88rem;color:var(--text-muted);margin:4px 0;}
   .ci-success{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.25);border-radius:12px;padding:20px;text-align:center;color:var(--green);font-weight:600;}
-  .ci-textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-family:inherit;resize:none;margin-bottom:16px;}
-  .ci-textarea:focus{border-color:var(--green);outline:none;}
+  .ci-textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-family:inherit;resize:none;margin-bottom:16px;transition:background-color 0.3s,border-color 0.3s;}
+  .ci-textarea:focus{border-color:var(--green);outline:none;box-shadow:0 0 0 3px var(--green-glow);}
   .ci-back{display:block;text-align:center;margin-top:20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
   .ci-back:hover{color:var(--green);}
+  @media(max-width:480px){.ci-card{padding:24px 18px;}.ci-title{font-size:1.2rem;}}
 </style>
 <div class="ci-page">
   <div class="ci-card">

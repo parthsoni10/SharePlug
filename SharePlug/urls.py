@@ -10,7 +10,7 @@ from stations.views import (
     checkin_page, checkin_list,
     toggle_bookmark, bookmark_list, delete_bookmark,
     upload_station_image, station_images,
-    stations_in_bounds, add_review
+    stations_in_bounds, add_review, search_stations
 )
 
 
@@ -26,6 +26,7 @@ urlpatterns = [
     # Map API
     path("get-nearest-station/", get_nearest_station, name='get_nearest_station'),
     path("api/stations/", stations_in_bounds, name='stations_in_bounds'),
+    path("api/stations/search/", search_stations, name='search_stations'),
     path('location/<int:station_id>/', location_detail, name='location_detail'),
 
     # Checkins

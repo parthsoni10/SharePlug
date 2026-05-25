@@ -2,7 +2,7 @@
 {% block extra_head %}
 <style>
   .sr-page{max-width:700px;margin:40px auto;padding:0 20px;}
-  .sr-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);}
+  .sr-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);transition:background-color 0.3s,border-color 0.3s;}
   .sr-title{font-size:1.4rem;font-weight:700;margin-bottom:6px;text-align:center;}
   .sr-sub{color:var(--text-muted);font-size:0.9rem;text-align:center;margin-bottom:28px;}
   .sr-step{display:flex;align-items:center;gap:10px;margin-bottom:24px;font-size:0.82rem;color:var(--text-muted);}
@@ -110,7 +110,16 @@
 <script>
 (function(){
   const regMap = L.map('reg-map').setView([20.5,78.9],5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(regMap);
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19});
+  const lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19});
+  let activeTile = currentTheme === 'light' ? lightTiles : darkTiles;
+  activeTile.addTo(regMap);
+  window.addEventListener('themechange', function(e) {
+    regMap.removeLayer(activeTile);
+    activeTile = e.detail.theme === 'light' ? lightTiles : darkTiles;
+    activeTile.addTo(regMap);
+  });
   let pin = null;
   regMap.on('click', e => {
     document.getElementById('reg-lat').value = e.latlng.lat.toFixed(6);
