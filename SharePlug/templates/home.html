@@ -151,6 +151,48 @@
     color:var(--text-muted); opacity:0.7;
   }
 
+  /* GPS-off state screen inside modal */
+  .loc-gps-off {
+    display:none;
+  }
+  .loc-gps-off-icon {
+    width:72px; height:72px;
+    background:linear-gradient(135deg,#ff6b35,#ff3b30);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 18px;
+    font-size:1.8rem; color:#fff;
+    box-shadow:0 8px 28px rgba(255,59,48,0.3);
+  }
+  .loc-gps-steps {
+    text-align:left;
+    margin:16px 0 20px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .loc-gps-step {
+    display:flex; align-items:flex-start; gap:12px;
+    font-size:0.88rem; color:var(--text);
+  }
+  .loc-gps-step-num {
+    min-width:24px; height:24px;
+    background:var(--green);
+    color:#0a1628;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:800;
+    flex-shrink:0; margin-top:1px;
+  }
+  .loc-btn-retry {
+    width:100%; padding:13px 20px;
+    border:none; border-radius:12px;
+    background:linear-gradient(135deg,var(--green),#00a8ff);
+    color:#0a1628; font-weight:700; font-size:0.95rem;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-bottom:8px;
+  }
+  .loc-btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,212,170,0.4); }
+
   /* ── CITY PILL in navbar ── */
   #city-pill {
     display:none;
@@ -172,16 +214,46 @@
 <!-- ── LOCATION PERMISSION MODAL ── -->
 <div id="loc-modal-overlay">
   <div class="loc-modal" role="dialog" aria-modal="true" aria-labelledby="loc-modal-title">
-    <div class="loc-modal-icon"><i class="fas fa-location-dot"></i></div>
-    <h2 id="loc-modal-title">Enable Your Location</h2>
-    <p>SharePlug can show you nearby EV charging stations and automatically zoom into your city. Your location is never stored or shared.</p>
-    <div class="loc-modal-btns">
-      <button class="loc-btn-allow" id="loc-allow-btn">
-        <i class="fas fa-crosshairs"></i> Use My Location
-      </button>
-      <button class="loc-btn-skip" id="loc-skip-btn">Skip – Show all of India</button>
+
+    <!-- ── VIEW 1: Ask for permission ── -->
+    <div id="loc-view-ask">
+      <div class="loc-modal-icon"><i class="fas fa-location-dot"></i></div>
+      <h2 id="loc-modal-title">Enable Your Location</h2>
+      <p>SharePlug can show you nearby EV charging stations and zoom into your city. Your location is never stored or shared.</p>
+      <div class="loc-modal-btns">
+        <button class="loc-btn-allow" id="loc-allow-btn">
+          <i class="fas fa-crosshairs"></i> Use My Location
+        </button>
+        <button class="loc-btn-skip" id="loc-skip-btn">Skip – Show all of India</button>
+      </div>
+      <p class="loc-modal-note"><i class="fas fa-lock"></i>&nbsp;Your privacy is protected. We only read coordinates.</p>
     </div>
-    <p class="loc-modal-note"><i class="fas fa-lock"></i>&nbsp;Your privacy is protected. We only read coordinates.</p>
+
+    <!-- ── VIEW 2: GPS is off – guide user ── -->
+    <div id="loc-view-gps-off" class="loc-gps-off">
+      <div class="loc-gps-off-icon"><i class="fas fa-satellite-dish"></i></div>
+      <h2>Turn On GPS</h2>
+      <p>Your device's GPS / Location Services is turned off. Please enable it to find stations near you.</p>
+      <div class="loc-gps-steps">
+        <div class="loc-gps-step">
+          <div class="loc-gps-step-num">1</div>
+          <span><strong>Android:</strong> Pull down the notification bar and tap the <strong>Location</strong> tile — or go to <em>Settings → Location</em> and turn it on.</span>
+        </div>
+        <div class="loc-gps-step">
+          <div class="loc-gps-step-num">2</div>
+          <span><strong>iPhone / iPad:</strong> Go to <em>Settings → Privacy & Security → Location Services</em> and enable it for Safari / your browser.</span>
+        </div>
+        <div class="loc-gps-step">
+          <div class="loc-gps-step-num">3</div>
+          <span>Come back here and tap <strong>Retry</strong> below.</span>
+        </div>
+      </div>
+      <button class="loc-btn-retry" id="loc-retry-btn">
+        <i class="fas fa-rotate-right"></i> Retry Location
+      </button>
+      <button class="loc-btn-skip" id="loc-skip-btn2">Skip – Show all of India</button>
+    </div>
+
   </div>
 </div>
 
@@ -274,8 +346,8 @@
     attribution:'© OpenStreetMap © CARTO', maxZoom:19
   });
 
-  // Apply correct tile layer based on current theme
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  // Apply correct tile layer based on current theme (default: light)
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   let activeTileLayer = currentTheme === 'light' ? lightTiles : darkTiles;
   activeTileLayer.addTo(map);
 
@@ -636,13 +708,17 @@
 
   // ── LOCATION PERMISSION MODAL ──
   (function() {
-    const overlay   = document.getElementById('loc-modal-overlay');
-    const allowBtn  = document.getElementById('loc-allow-btn');
-    const skipBtn   = document.getElementById('loc-skip-btn');
+    const overlay     = document.getElementById('loc-modal-overlay');
+    const viewAsk     = document.getElementById('loc-view-ask');
+    const viewGpsOff  = document.getElementById('loc-view-gps-off');
+    const allowBtn    = document.getElementById('loc-allow-btn');
+    const skipBtn     = document.getElementById('loc-skip-btn');
+    const retryBtn    = document.getElementById('loc-retry-btn');
+    const skipBtn2    = document.getElementById('loc-skip-btn2');
 
     // Show city pill in navbar after detecting location
     function showCityPill(cityName) {
-      let pill = document.getElementById('city-pill');
+      const pill = document.getElementById('city-pill');
       if (!pill) return;
       pill.innerHTML = `<i class="fas fa-location-dot"></i> ${cityName}`;
       pill.style.display = 'flex';
@@ -669,9 +745,7 @@
     function onLocationGranted(pos) {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      // Fly map to user's city (zoom 12)
       map.flyTo([lat, lng], 12, { duration: 1.5 });
-      // Drop a subtle user marker
       if (userMarker) map.removeLayer(userMarker);
       userMarker = L.marker([lat, lng], {
         icon: L.divIcon({
@@ -680,45 +754,90 @@
           iconSize: [20, 20], iconAnchor: [10, 10]
         })
       }).addTo(map).bindPopup('📍 You are here').openPopup();
-      // Reverse-geocode and show city pill
       reverseGeocode(lat, lng, showCityPill);
     }
 
-    // Dismiss modal helper
+    // Dismiss modal permanently
     function dismissModal() {
       overlay.classList.add('hidden');
       localStorage.setItem('sp-loc-asked', '1');
     }
 
-    // ── ALLOW button ──
-    allowBtn.addEventListener('click', function() {
-      allowBtn.innerHTML = '<span class="sp-spinner"></span>&nbsp;Detecting…';
-      allowBtn.disabled = true;
+    // Reset allow button to original state
+    function resetAllowBtn() {
+      allowBtn.innerHTML = '<i class="fas fa-crosshairs"></i> Use My Location';
+      allowBtn.disabled = false;
+    }
+
+    // Switch to GPS-off guidance screen
+    function showGpsOffScreen() {
+      viewAsk.style.display    = 'none';
+      viewGpsOff.style.display = 'block';
+      // When user comes back from Settings (page becomes visible again), auto-retry
+      document.addEventListener('visibilitychange', function onVisible() {
+        if (document.visibilityState === 'visible') {
+          document.removeEventListener('visibilitychange', onVisible);
+          // Small delay then auto-retry silently
+          setTimeout(() => triggerGeolocate(true), 800);
+        }
+      }, { once: true });
+    }
+
+    // Core geolocation call; silent = don't show loading state on allow btn
+    function triggerGeolocate(silent) {
+      if (!silent) {
+        allowBtn.innerHTML = '<span class="sp-spinner"></span>&nbsp;Detecting…';
+        allowBtn.disabled = true;
+      } else {
+        retryBtn.innerHTML = '<span class="sp-spinner"></span>&nbsp;Detecting…';
+        retryBtn.disabled = true;
+      }
+
       navigator.geolocation.getCurrentPosition(
         function(pos) {
           dismissModal();
           onLocationGranted(pos);
         },
         function(err) {
-          // Permission denied or unavailable → close modal gracefully
-          dismissModal();
-          let msg = '';
-          if (err.code === err.PERMISSION_DENIED) {
-            msg = 'Location access was denied. Showing all of India.';
-          } else {
-            msg = 'Could not get your location. Showing all of India.';
+          if (!silent) resetAllowBtn();
+          else {
+            retryBtn.innerHTML = '<i class="fas fa-rotate-right"></i> Retry Location';
+            retryBtn.disabled = false;
           }
-          showGpsToast('Location', msg);
+
+          if (err.code === err.PERMISSION_DENIED) {
+            // Browser permission denied → close and inform
+            dismissModal();
+            showGpsToast('Location Denied', 'Enable location access in your browser settings, then refresh.');
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            // Device GPS is off → show guidance screen
+            showGpsOffScreen();
+          } else if (err.code === err.TIMEOUT) {
+            // Timed out → show guidance
+            showGpsOffScreen();
+          }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
+    }
+
+    // ── ALLOW button ──
+    allowBtn.addEventListener('click', function() {
+      triggerGeolocate(false);
     });
 
-    // ── SKIP button ──
-    skipBtn.addEventListener('click', function() {
-      dismissModal();
-      // Map already defaults to whole India — no action needed
+    // ── RETRY button (GPS-off screen) ──
+    retryBtn.addEventListener('click', function() {
+      triggerGeolocate(true);
     });
+
+    // ── SKIP buttons ──
+    function doSkip() {
+      dismissModal();
+      // Map already defaults to whole India
+    }
+    skipBtn.addEventListener('click', doSkip);
+    skipBtn2.addEventListener('click', doSkip);
 
     // Don't show modal if user has already been asked before
     if (localStorage.getItem('sp-loc-asked')) {

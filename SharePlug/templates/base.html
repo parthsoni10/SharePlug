@@ -1,11 +1,25 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="SharePlug – Find, book and review EV charging stations across India. Join India's fastest growing EV charging network.">
   <title>{% block title %}{{ page|default:"SharePlug – EV Charging Network" }}{% endblock %}</title>
+
+  <!-- Blocking theme init: runs before CSS paints — default is ALWAYS light -->
+  <script>
+    (function() {
+      // Delete old key from previous versions so stale 'dark' is gone forever
+      localStorage.removeItem('sp-theme');
+      var saved = localStorage.getItem('sp-theme-v2');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,36 +33,9 @@
 
   <style>
     /* ══════════════════════════════════════════════════════════════
-       DARK THEME (default)
+       LIGHT THEME — default (:root)
        ══════════════════════════════════════════════════════════════ */
-    :root, [data-theme="dark"] {
-      --navy: #0a1628;
-      --navy-light: #111f3a;
-      --navy-card: #162040;
-      --green: #00d4aa;
-      --green-dark: #00a882;
-      --green-glow: rgba(0, 212, 170, 0.15);
-      --orange: #ff6b35;
-      --text: #e8edf5;
-      --text-muted: #8899bb;
-      --border: rgba(255,255,255,0.08);
-      --glass: rgba(255,255,255,0.05);
-      --glass-hover: rgba(255,255,255,0.09);
-      --shadow: 0 8px 32px rgba(0,0,0,0.4);
-      --radius: 14px;
-      --nav-h: 64px;
-      --navbar-bg: rgba(10, 22, 40, 0.92);
-      --navbar-mobile-bg: rgba(10,22,40,0.97);
-      --input-bg: rgba(255,255,255,0.05);
-      --scrollbar-thumb: rgba(255,255,255,0.15);
-      --scrollbar-thumb-hover: rgba(255,255,255,0.25);
-      --table-row-hover: rgba(255,255,255,0.04);
-    }
-
-    /* ══════════════════════════════════════════════════════════════
-       LIGHT THEME
-       ══════════════════════════════════════════════════════════════ */
-    [data-theme="light"] {
+    :root, [data-theme="light"] {
       --navy: #f0f4f8;
       --navy-light: #ffffff;
       --navy-card: #ffffff;
@@ -62,12 +49,39 @@
       --glass: rgba(0,0,0,0.03);
       --glass-hover: rgba(0,0,0,0.06);
       --shadow: 0 8px 32px rgba(0,0,0,0.08);
+      --radius: 14px;
+      --nav-h: 64px;
       --navbar-bg: rgba(255, 255, 255, 0.92);
       --navbar-mobile-bg: rgba(255,255,255,0.97);
       --input-bg: rgba(0,0,0,0.04);
       --scrollbar-thumb: rgba(0,0,0,0.15);
       --scrollbar-thumb-hover: rgba(0,0,0,0.25);
       --table-row-hover: rgba(0,0,0,0.03);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       DARK THEME — override
+       ══════════════════════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --navy: #0a1628;
+      --navy-light: #111f3a;
+      --navy-card: #162040;
+      --green: #00d4aa;
+      --green-dark: #00a882;
+      --green-glow: rgba(0, 212, 170, 0.15);
+      --orange: #ff6b35;
+      --text: #e8edf5;
+      --text-muted: #8899bb;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.05);
+      --glass-hover: rgba(255,255,255,0.09);
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --navbar-bg: rgba(10, 22, 40, 0.92);
+      --navbar-mobile-bg: rgba(10,22,40,0.97);
+      --input-bg: rgba(255,255,255,0.05);
+      --scrollbar-thumb: rgba(255,255,255,0.15);
+      --scrollbar-thumb-hover: rgba(255,255,255,0.25);
+      --table-row-hover: rgba(255,255,255,0.04);
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -575,18 +589,13 @@
   (function() {
     const html = document.documentElement;
     const toggle = document.getElementById('theme-toggle');
-    const saved = localStorage.getItem('sp-theme');
-
-    // Apply saved theme on load
-    if (saved) {
-      html.setAttribute('data-theme', saved);
-    }
+    // Theme already applied by blocking <head> script — no need to re-apply here
 
     toggle.addEventListener('click', function() {
-      const current = html.getAttribute('data-theme') || 'dark';
+      const current = html.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      localStorage.setItem('sp-theme', next);
+      localStorage.setItem('sp-theme-v2', next);
 
       // Dispatch custom event for map tile swap
       window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
