@@ -82,10 +82,109 @@
   .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:rgba(0,212,170,0.25); }
   .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background:var(--green); color:#0a1628; font-weight:700; font-size:0.8rem; }
   .leaflet-control-zoom { display:none; }
+
+  /* ── LOCATION PERMISSION MODAL ── */
+  #loc-modal-overlay {
+    position:fixed; inset:0; z-index:20000;
+    background:rgba(0,0,0,0.7);
+    backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    animation:fadeIn 0.35s ease;
+  }
+  #loc-modal-overlay.hidden { display:none; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .loc-modal {
+    background:var(--navy-card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:40px 36px 32px;
+    width:min(440px,92vw);
+    text-align:center;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);
+    animation:modalPop 0.4s cubic-bezier(.34,1.56,.64,1);
+    position:relative;
+  }
+  @keyframes modalPop { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .loc-modal-icon {
+    width:80px; height:80px;
+    background:linear-gradient(135deg,var(--green),#00a8ff);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 20px;
+    font-size:2rem; color:#0a1628;
+    box-shadow:0 8px 32px rgba(0,212,170,0.35);
+    animation:pulse-loc 2s ease-in-out infinite;
+  }
+  @keyframes pulse-loc {
+    0%,100%{box-shadow:0 8px 32px rgba(0,212,170,0.35);}
+    50%{box-shadow:0 8px 48px rgba(0,212,170,0.65);}
+  }
+
+  .loc-modal h2 { font-size:1.4rem; font-weight:800; margin-bottom:10px; color:var(--text); }
+  .loc-modal p  { color:var(--text-muted); font-size:0.9rem; line-height:1.6; margin-bottom:28px; }
+
+  .loc-modal-btns { display:flex; flex-direction:column; gap:10px; }
+
+  .loc-btn-allow {
+    width:100%; padding:14px 20px;
+    border:none; border-radius:12px;
+    background:linear-gradient(135deg,var(--green),#00a8ff);
+    color:#0a1628; font-weight:700; font-size:1rem;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .loc-btn-allow:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,212,170,0.4); }
+
+  .loc-btn-skip {
+    width:100%; padding:12px 20px;
+    border:1px solid var(--border); border-radius:12px;
+    background:var(--glass); color:var(--text-muted);
+    font-size:0.88rem; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .loc-btn-skip:hover { background:var(--glass-hover); color:var(--text); }
+
+  .loc-modal-note {
+    margin-top:16px; font-size:0.75rem;
+    color:var(--text-muted); opacity:0.7;
+  }
+
+  /* ── CITY PILL in navbar ── */
+  #city-pill {
+    display:none;
+    align-items:center; gap:6px;
+    padding:5px 12px;
+    border-radius:20px;
+    background:rgba(0,212,170,0.12);
+    border:1px solid rgba(0,212,170,0.25);
+    color:var(--green);
+    font-size:0.82rem; font-weight:600;
+    flex-shrink:0;
+    animation:fadeIn 0.4s ease;
+  }
+  #city-pill i { font-size:0.78rem; }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- ── LOCATION PERMISSION MODAL ── -->
+<div id="loc-modal-overlay">
+  <div class="loc-modal" role="dialog" aria-modal="true" aria-labelledby="loc-modal-title">
+    <div class="loc-modal-icon"><i class="fas fa-location-dot"></i></div>
+    <h2 id="loc-modal-title">Enable Your Location</h2>
+    <p>SharePlug can show you nearby EV charging stations and automatically zoom into your city. Your location is never stored or shared.</p>
+    <div class="loc-modal-btns">
+      <button class="loc-btn-allow" id="loc-allow-btn">
+        <i class="fas fa-crosshairs"></i> Use My Location
+      </button>
+      <button class="loc-btn-skip" id="loc-skip-btn">Skip – Show all of India</button>
+    </div>
+    <p class="loc-modal-note"><i class="fas fa-lock"></i>&nbsp;Your privacy is protected. We only read coordinates.</p>
+  </div>
+</div>
+
 <!-- Search Bar -->
 <div class="map-search">
   <input type="text" id="search-input" placeholder="Search city, address, or station name..." autocomplete="off">
@@ -534,6 +633,98 @@
   // ── AUTO-OPEN FROM URL ──
   const selId = '{{ selected_station_id|default:"" }}';
   if(selId) openStation(parseInt(selId));
+
+  // ── LOCATION PERMISSION MODAL ──
+  (function() {
+    const overlay   = document.getElementById('loc-modal-overlay');
+    const allowBtn  = document.getElementById('loc-allow-btn');
+    const skipBtn   = document.getElementById('loc-skip-btn');
+
+    // Show city pill in navbar after detecting location
+    function showCityPill(cityName) {
+      let pill = document.getElementById('city-pill');
+      if (!pill) return;
+      pill.innerHTML = `<i class="fas fa-location-dot"></i> ${cityName}`;
+      pill.style.display = 'flex';
+    }
+
+    // Reverse-geocode coordinates → city name via Nominatim
+    function reverseGeocode(lat, lng, callback) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`)
+        .then(r => r.json())
+        .then(d => {
+          const city = d.address && (
+            d.address.city ||
+            d.address.town ||
+            d.address.village ||
+            d.address.county ||
+            d.address.state_district
+          );
+          callback(city || 'Your Location');
+        })
+        .catch(() => callback('Your Location'));
+    }
+
+    // Called when user grants location
+    function onLocationGranted(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      // Fly map to user's city (zoom 12)
+      map.flyTo([lat, lng], 12, { duration: 1.5 });
+      // Drop a subtle user marker
+      if (userMarker) map.removeLayer(userMarker);
+      userMarker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(59,130,246,0.5);"></div>',
+          iconSize: [20, 20], iconAnchor: [10, 10]
+        })
+      }).addTo(map).bindPopup('📍 You are here').openPopup();
+      // Reverse-geocode and show city pill
+      reverseGeocode(lat, lng, showCityPill);
+    }
+
+    // Dismiss modal helper
+    function dismissModal() {
+      overlay.classList.add('hidden');
+      localStorage.setItem('sp-loc-asked', '1');
+    }
+
+    // ── ALLOW button ──
+    allowBtn.addEventListener('click', function() {
+      allowBtn.innerHTML = '<span class="sp-spinner"></span>&nbsp;Detecting…';
+      allowBtn.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          dismissModal();
+          onLocationGranted(pos);
+        },
+        function(err) {
+          // Permission denied or unavailable → close modal gracefully
+          dismissModal();
+          let msg = '';
+          if (err.code === err.PERMISSION_DENIED) {
+            msg = 'Location access was denied. Showing all of India.';
+          } else {
+            msg = 'Could not get your location. Showing all of India.';
+          }
+          showGpsToast('Location', msg);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    });
+
+    // ── SKIP button ──
+    skipBtn.addEventListener('click', function() {
+      dismissModal();
+      // Map already defaults to whole India — no action needed
+    });
+
+    // Don't show modal if user has already been asked before
+    if (localStorage.getItem('sp-loc-asked')) {
+      overlay.classList.add('hidden');
+    }
+  })();
 })();
 </script>
 {% endblock %}
