@@ -65,8 +65,8 @@ if config('DATABASE_URL', default=None):
     if 'dpg-d86vmn8g4nts73be7dp0-a' in db_url:
         db_url = 'postgresql://shareplug_rkca_user:uoKGRRSgbh7tp2CWoazJgsaOxH40jgRq@dpg-d8vkiesm0tmc73cudpdg-a/shareplug_rkca'
     DATABASES = {
-        'default': dj_database_url.config(
-            default=db_url,
+        'default': dj_database_url.parse(
+            db_url,
             conn_max_age=600,
             ssl_require=not DEBUG  # SSL only on Render, not local
         )
