@@ -61,12 +61,12 @@ WSGI_APPLICATION = "SharePlug.wsgi.application"
 if config('DATABASE_URL', default=None):
     import dj_database_url
     DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',  # fallback for local
-        conn_max_age=600,
-        ssl_require=not DEBUG  # SSL only on Render, not local
-    )
-}
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),  # use decouple configuration
+            conn_max_age=600,
+            ssl_require=not DEBUG  # SSL only on Render, not local
+        )
+    }
 else:
     DATABASES = {
         "default": {
